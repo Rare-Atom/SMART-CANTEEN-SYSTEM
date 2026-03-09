@@ -1,32 +1,86 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Image from "next/image";
 import Layout from "@/components/layout";
-import Card from "@/components/card";
-import Button from "@/components/button";
+import menuData from "@/mock/menu.json";
 
-export default function Page() {
+export default function MenuPage() {
+  const [category, setCategory] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const filteredItems = useMemo(() => {
+    return menuData.filter((item) => {
+      const categoryMatch = category === "all" || item.category === category;
+      const searchMatch =
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.description.toLowerCase().includes(search.toLowerCase());
+      return categoryMatch && searchMatch;
+    });
+  }, [category, search]);
+
   return (
-    <Layout title="Menu">
-      <div style={{ display: "grid", gap: 12 }}>
-        <Card>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontWeight: 900, fontSize: 16 }}>Veg Fried Rice</div>
-              <div style={{ opacity: 0.75, marginTop: 4 }}>₹60 • Available</div>
-            </div>
-            <Button variant="ghost">Add</Button>
-          </div>
-        </Card>
+    <Layout>
+      <h1 className="sectionHeading">Pick your craving</h1>
+      <p className="sectionSub">
+        Fresh campus favourites, comfort meals, and quick sips — all lined up for faster pickup.
+      </p>
 
-        <Card>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontWeight: 900, fontSize: 16 }}>Tea</div>
-              <div style={{ opacity: 0.75, marginTop: 4 }}>₹15 • Available</div>
-            </div>
-            <Button variant="ghost">Add</Button>
-          </div>
-        </Card>
+      <div className="searchRow">
+        <button
+          className={`filterChip ${category === "all" ? "active" : ""}`}
+          onClick={() => setCategory("all")}
+        >
+          All
+        </button>
+        <button
+          className={`filterChip ${category === "veg" ? "active" : ""}`}
+          onClick={() => setCategory("veg")}
+        >
+          Veg
+        </button>
+        <button
+          className={`filterChip ${category === "nonveg" ? "active" : ""}`}
+          onClick={() => setCategory("nonveg")}
+        >
+          Non-Veg
+        </button>
+        <button
+          className={`filterChip ${category === "snacks" ? "active" : ""}`}
+          onClick={() => setCategory("snacks")}
+        >
+          Snacks & Drinks
+        </button>
 
-        <Button full>Proceed to Checkout</Button>
+        <input
+          className="searchInput"
+          placeholder="Search your favourite meal or drink"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <div className="gridCards">
+        {filteredItems.map((item) => (
+          <div className="foodCard" key={item.id}>
+            <Image
+              src={item.image}
+              alt={item.name}
+              width={420}
+              height={260}
+              className="foodThumb"
+            />
+            <div className="foodBody">
+              <h3 className="foodName">{item.name}</h3>
+              <p className="foodDesc">{item.description}</p>
+
+              <div className="foodMeta">
+                <div className="foodPrice">₹{item.price}</div>
+                <button className="buyBtn">Buy</button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </Layout>
   );
