@@ -1,4 +1,98 @@
 [
-  { "id": "m1", "name": "Veg Fried Rice", "price": 60, "isAvailable": true },
-  { "id": "m2", "name": "Tea", "price": 15, "isAvailable": true }
+  {
+    "id": 1,
+    "name": "Veg Fried Rice",
+    "price": 80,
+    "category": "veg",
+    "image": "/hero-food.png",
+    "description": "Wok-tossed rice with vegetables, warm spices, and quick canteen comfort."
+  },
+  {
+    "id": 2,
+    "name": "Masala Dosa",
+    "price": 35,
+    "category": "veg",
+    "image": "/hero-food.png",
+    "description": "Golden crisp dosa with masala filling, sambar, and chutney."
+  },
+  {
+    "id": 3,
+    "name": "Idli Set",
+    "price": 25,
+    "category": "veg",
+    "image": "/hero-food.png",
+    "description": "Soft idlis served with hot sambar and a smooth chutney touch."
+  },
+  {
+    "id": 4,
+    "name": "Chicken Fried Rice",
+    "price": 130,
+    "category": "nonveg",
+    "image": "/login-food.png",
+    "description": "Flavour-packed rice with chicken bites for a filling lunch break."
+  },
+  {
+    "id": 5,
+    "name": "Chicken Biryani with Egg",
+    "price": 150,
+    "category": "nonveg",
+    "image": "/login-food.png",
+    "description": "Aromatic biryani layered with spice, chicken pieces, and egg."
+  },
+  {
+    "id": 6,
+    "name": "Chicken 65",
+    "price": 80,
+    "category": "nonveg",
+    "image": "/login-food.png",
+    "description": "Spicy, crispy, crowd-favourite chicken bites made for quick cravings."
+  },
+  {
+    "id": 7,
+    "name": "Omelette",
+    "price": 15,
+    "category": "nonveg",
+    "image": "/login-food.png",
+    "description": "Simple, hot, and protein-packed—made for an instant hunger fix."
+  },
+  {
+    "id": 8,
+    "name": "Softie",
+    "price": 30,
+    "category": "snacks",
+    "image": "/hero-food.png",
+    "description": "Creamy soft-serve style treat for a chilled break between classes."
+  },
+  {
+    "id": 9,
+    "name": "Fresh Lime Juice",
+    "price": 30,
+    "category": "snacks",
+    "image": "/hero-food.png",
+    "description": "Fresh, cool, and refreshing with a light citrus kick."
+  },
+  {
+    "id": 10,
+    "name": "Tea",
+    "price": 12,
+    "category": "snacks",
+    "image": "/hero-food.png",
+    "description": "Classic campus tea—quick, warm, and always in demand."
+  },
+  {
+    "id": 11,
+    "name": "Coffee",
+    "price": 15,
+    "category": "snacks",
+    "image": "/hero-food.png",
+    "description": "Strong and smooth, perfect for powering through the next session."
+  },
+  {
+    "id": 12,
+    "name": "Rose Milk",
+    "price": 50,
+    "category": "snacks",
+    "image": "/hero-food.png",
+    "description": "Sweet, cold, and nostalgic—an easy favourite for hot afternoons."
+  }
 ]
