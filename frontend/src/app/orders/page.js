@@ -1,58 +1,86 @@
-import Layout from "@/components/layout";
+"use client"
 
-const orders = [
-  {
-    id: "#124",
-    items: "Veg Fried Rice, Tea",
-    slot: "12:15 - 12:30",
-    status: "accepted",
-    note: "Your meal is moving smoothly. Payment window is active."
-  },
-  {
-    id: "#128",
-    items: "Chicken Biryani with Egg",
-    slot: "01:00 - 01:15",
-    status: "preparing",
-    note: "Your order is in the kitchen now. Pickup will be ready soon."
-  },
-  {
-    id: "#131",
-    items: "Rose Milk, Softie",
-    slot: "03:15 - 03:30",
-    status: "ready",
-    note: "Everything’s ready at the counter. Go grab it while it’s fresh."
-  }
-];
+import Link from "next/link"
+import { useState, useEffect } from "react"
+import orders from "@/mock/orders.json"
+import Badge from "@/components/badge.js"
 
-export default function OrdersPage() {
-  return (
-    <Layout>
-      <h1 className="sectionHeading">Your order story</h1>
-      <p className="sectionSub">
-        Track every step — from approval to pickup — without standing around and guessing.
-      </p>
+export default function OrdersPage(){
 
-      <div className="orderGrid">
-        {orders.map((order) => (
-          <div className="orderCard" key={order.id}>
-            <div className="orderTop">
-              <div className="orderId">{order.id}</div>
-              <div className={`badge ${order.status}`}>{order.status.toUpperCase()}</div>
-            </div>
+const [tokens,setTokens] = useState([])
 
-            <div className="orderMeta">
-              <div><strong>Items:</strong> {order.items}</div>
-              <div><strong>Slot:</strong> {order.slot}</div>
-              <div>{order.note}</div>
-            </div>
+useEffect(() => {
+  const generatedTokens = orders.map(() =>
+    Math.random().toString(36).substring(2,8)
+  )
+  setTokens(generatedTokens)
+}, [])
 
-            <div className="orderActions">
-              <button className="primarySmallBtn">View Details</button>
-              <button className="secondaryBtn">Payment</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Layout>
-  );
+return(
+
+<div style={{padding:"20px"}}>
+
+<h1>canteen menu</h1>
+
+<div style={{
+display:"grid",
+gridTemplateColumns:"repeat(3,1fr)",
+gap:"20px"
+}}>
+
+{orders.map((item,index)=>{
+
+const token = tokens[index]
+
+return(
+
+<div key={index}
+style={{
+border:"1px solid #ccc",
+padding:"10px",
+borderRadius:"10px"
+}}>
+
+<img
+src={item.image}
+alt={item.name}
+style={{
+width:"100%",
+height:"200px",
+objectFit:"cover"
+}}
+/>
+
+<h3>{item.name}</h3>
+
+<p>₹{item.price}</p>
+
+<Badge status={item.status}/>
+
+<br/><br/>
+
+<Link href={`/pay/${token}`}>
+<button style={{
+background:"green",
+color:"white",
+padding:"8px 15px",
+border:"none",
+borderRadius:"5px"
+}}>
+Order Now
+</button>
+</Link>
+
+</div>
+
+)
+
+})}
+
+</div>
+
+</div>
+
+)
+
 }
