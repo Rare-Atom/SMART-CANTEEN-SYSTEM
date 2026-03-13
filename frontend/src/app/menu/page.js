@@ -15,42 +15,98 @@ export default function MenuPage() {
 
   const filteredItems = useMemo(() => {
     return menuData.filter((item) => {
-      const categoryMatch = category === "all" || item.category === category;
+      const mappedCategory =
+        item.category === "drinks" ? "snacks" : item.category;
+
+      const categoryMatch =
+        category === "all" || mappedCategory === category;
+
       const searchMatch =
         item.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.description.toLowerCase().includes(search.toLowerCase());
+        (item.description || "")
+          .toLowerCase()
+          .includes(search.toLowerCase());
 
       return categoryMatch && searchMatch;
     });
   }, [category, search]);
 
-  const getCategoryHeading = () => {
+  const groupedItems = useMemo(() => {
+    if (category !== "all") return null;
+
+    return {
+      veg: filteredItems.filter((item) => item.category === "veg"),
+      nonveg: filteredItems.filter((item) => item.category === "nonveg"),
+      snacks: filteredItems.filter(
+        (item) => item.category === "snacks" || item.category === "drinks"
+      )
+    };
+  }, [category, filteredItems]);
+
+  const getTitle = () => {
     if (category === "veg") return "Pure veg picks";
     if (category === "nonveg") return "Hearty non-veg favourites";
-    if (category === "snacks") return "Quick cravings & cool sips";
+    if (category === "snacks") return "Snacks, chats & cool drinks";
     return "Pick your craving";
   };
 
-  const getCategorySub = () => {
+  const getSubtitle = () => {
     if (category === "veg") {
-      return "From dosa to rice bowls, explore comforting vegetarian favourites made for campus appetite.";
+      return "Comfort meals, dosa favourites, and canteen classics made for everyday hunger.";
     }
     if (category === "nonveg") {
-      return "Flavour-packed biryani, chicken bites, and protein-rich quick meals—all in one place.";
+      return "Biryani, fried rice, noodles, and quick protein-heavy favourites.";
     }
     if (category === "snacks") {
-      return "Softies, chats, juices, tea, and coffee for fast refreshment between classes.";
+      return "Tea, coffee, juices, chaat, and quick bites for short breaks and evening cravings.";
     }
-    return "Fresh meals, quick bites, and campus favourites—all lined up for faster pickup.";
+    return "Browse the campus menu by category and discover what fits your hunger best.";
   };
+
+  const renderCard = (item) => (
+    <div className="foodCard foodCardPremium" key={item.id}>
+      <div className="foodImageWrap">
+        <Image
+          src={item.image}
+          alt={item.name}
+          width={600}
+          height={400}
+          className="foodThumb foodThumbPremium"
+        />
+        <div className="foodOverlayTag">
+          {item.category === "veg"
+            ? "Veg"
+            : item.category === "nonveg"
+            ? "Non-Veg"
+            : "Snacks & Drinks"}
+        </div>
+      </div>
+
+      <div className="foodBody foodBodyPremium">
+        <div className="foodHeaderRow">
+          <h3 className="foodName">{item.name}</h3>
+          <div className="foodPrice">₹{item.price}</div>
+        </div>
+
+        <p className="foodDesc">
+          {item.description || "Freshly prepared canteen favourite."}
+        </p>
+
+        <div className="foodFooterRow">
+          <div className="foodMetaSub">Freshly available</div>
+          <button className="buyBtn">Add</button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <Layout>
       <div className="menuHero">
-        <div className="menuHeroText">
+        <div>
           <div className="menuKicker">Campus menu</div>
-          <h1 className="sectionHeading">{getCategoryHeading()}</h1>
-          <p className="sectionSub">{getCategorySub()}</p>
+          <h1 className="sectionHeading">{getTitle()}</h1>
+          <p className="sectionSub">{getSubtitle()}</p>
         </div>
       </div>
 
@@ -86,55 +142,55 @@ export default function MenuPage() {
 
           <input
             className="searchInput"
-            placeholder="Search your favourite meal or drink"
+            placeholder="Search for dosa, biryani, coffee or more"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="gridCards menuGridRefined">
-        {filteredItems.map((item) => (
-          <div className="foodCard foodCardRefined" key={item.id}>
-            <div className="foodThumbWrap">
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={420}
-                height={260}
-                className="foodThumb"
-              />
-
-              <div className="foodTopTag">
-                {item.category === "veg"
-                  ? "Veg"
-                  : item.category === "nonveg"
-                  ? "Non-Veg"
-                  : "Snacks"}
-              </div>
+      {category === "all" && groupedItems ? (
+        <div className="menuSections">
+          <section className="menuSectionBlock">
+            <div className="menuSectionHead">
+              <h2>Veg</h2>
+              <p>Comforting vegetarian favourites</p>
             </div>
-
-            <div className="foodBody">
-              <h3 className="foodName">{item.name}</h3>
-              <p className="foodDesc">{item.description}</p>
-
-              <div className="foodMeta">
-                <div>
-                  <div className="foodPrice">₹{item.price}</div>
-                  <div className="foodMetaSub">Freshly available</div>
-                </div>
-
-                <button className="buyBtn">Buy</button>
-              </div>
+            <div className="gridCards">
+              {groupedItems.veg.map(renderCard)}
             </div>
-          </div>
-        ))}
-      </div>
+          </section>
+
+          <section className="menuSectionBlock">
+            <div className="menuSectionHead">
+              <h2>Non-Veg</h2>
+              <p>Hearty meal picks and rich flavours</p>
+            </div>
+            <div className="gridCards">
+              {groupedItems.nonveg.map(renderCard)}
+            </div>
+          </section>
+
+          <section className="menuSectionBlock">
+            <div className="menuSectionHead">
+              <h2>Snacks & Drinks</h2>
+              <p>Quick bites, chats, juices, tea and coffee</p>
+            </div>
+            <div className="gridCards">
+              {groupedItems.snacks.map(renderCard)}
+            </div>
+          </section>
+        </div>
+      ) : (
+        <div className="gridCards">
+          {filteredItems.map(renderCard)}
+        </div>
+      )}
 
       {filteredItems.length === 0 && (
         <div className="emptyState">
           <h3>No matching items found</h3>
-          <p>Try a different keyword or switch to another category.</p>
+          <p>Try another keyword or switch to a different category.</p>
         </div>
       )}
     </Layout>

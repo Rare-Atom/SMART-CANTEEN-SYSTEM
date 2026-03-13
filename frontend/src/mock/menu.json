@@ -4,103 +4,151 @@
     "name": "Veg Fried Rice",
     "price": 80,
     "category": "veg",
-    "image": "/hero-food.png",
-    "description": "Wok-tossed rice with vegetables and canteen-style flavour for a filling lunch."
+    "image": "/menu/Veg fried rice.png",
+    "description": "Wok-tossed rice with vegetables and classic canteen flavour."
   },
   {
     "id": 2,
-    "name": "Masala Dosa",
-    "price": 35,
+    "name": "Plain Dosa",
+    "price": 30,
     "category": "veg",
-    "image": "/hero-food.png",
-    "description": "Golden crisp dosa with masala filling, served with chutney and sambar."
+    "image": "/menu/Plain dosa.png",
+    "description": "Golden crisp dosa served with chutney and sambar."
   },
   {
     "id": 3,
-    "name": "Idli Set",
-    "price": 25,
+    "name": "Podi Dosa",
+    "price": 40,
     "category": "veg",
-    "image": "/hero-food.png",
-    "description": "Soft idlis with hot sambar and smooth chutney for a classic breakfast pick."
+    "image": "/menu/podi dosa.png",
+    "description": "Crispy dosa topped with spicy podi and ghee."
   },
   {
     "id": 4,
-    "name": "Chicken Fried Rice",
-    "price": 130,
-    "category": "nonveg",
-    "image": "/login-food.png",
-    "description": "A flavour-packed rice bowl with chicken bites made for a hearty meal break."
+    "name": "Poori",
+    "price": 35,
+    "category": "veg",
+    "image": "/menu/poori.png",
+    "description": "Soft puffed pooris served with hot potato masala."
   },
   {
     "id": 5,
-    "name": "Chicken Biryani with Egg",
-    "price": 150,
-    "category": "nonveg",
-    "image": "/login-food.png",
-    "description": "Aromatic biryani layered with chicken and egg for a rich campus favourite."
+    "name": "Parotta",
+    "price": 20,
+    "category": "veg",
+    "image": "/menu/parotta.png",
+    "description": "Layered flaky parotta served with delicious curry."
   },
   {
     "id": 6,
-    "name": "Chicken 65",
-    "price": 80,
+    "name": "Chicken Fried Rice",
+    "price": 130,
     "category": "nonveg",
-    "image": "/login-food.png",
-    "description": "Crisp, spicy chicken bites with bold flavour and quick-snack energy."
+    "image": "/menu/Chicken fried rice.png",
+    "description": "Wok fried rice with chicken pieces and spices."
   },
   {
     "id": 7,
-    "name": "Omelette",
-    "price": 15,
+    "name": "Chicken Biryani",
+    "price": 150,
     "category": "nonveg",
-    "image": "/login-food.png",
-    "description": "Simple, hot, and protein-rich—perfect for an instant hunger fix."
+    "image": "/menu/Chicken Biriyani.png",
+    "description": "Aromatic biryani cooked with chicken and traditional spices."
   },
   {
     "id": 8,
-    "name": "Softie",
-    "price": 30,
-    "category": "snacks",
-    "image": "/hero-food.png",
-    "description": "A creamy chilled treat for a quick sweet break between classes."
+    "name": "Chicken Noodles",
+    "price": 120,
+    "category": "nonveg",
+    "image": "/menu/Chicken noodles.png",
+    "description": "Stir-fried noodles with chicken and vegetables."
   },
   {
     "id": 9,
-    "name": "Fresh Lime Juice",
-    "price": 30,
+    "name": "Samosa",
+    "price": 15,
     "category": "snacks",
-    "image": "/hero-food.png",
-    "description": "Fresh, cool, and citrusy—perfect for a hot afternoon recharge."
+    "image": "/menu/Samosa.png",
+    "description": "Crispy golden samosa filled with spicy potato masala."
   },
   {
     "id": 10,
-    "name": "Tea",
-    "price": 12,
+    "name": "Bhelpuri",
+    "price": 25,
     "category": "snacks",
-    "image": "/hero-food.png",
-    "description": "The campus essential—hot, strong, and always in demand."
+    "image": "/menu/Bhelpuri.png",
+    "description": "Tangy street-style bhelpuri with chutneys and sev."
   },
   {
     "id": 11,
-    "name": "Coffee",
-    "price": 15,
+    "name": "Pani Poori",
+    "price": 30,
     "category": "snacks",
-    "image": "/hero-food.png",
-    "description": "Bold and comforting, made for quick breaks and long days."
+    "image": "/menu/Pani poori.png",
+    "description": "Crunchy pani poori served with spicy mint water."
   },
   {
     "id": 12,
-    "name": "Rose Milk",
-    "price": 50,
+    "name": "Masala Channa",
+    "price": 30,
     "category": "snacks",
-    "image": "/hero-food.png",
-    "description": "Cold, sweet, and refreshing with a nostalgic canteen touch."
+    "image": "/menu/Masala channa.png",
+    "description": "Spiced chickpeas snack full of flavour."
   },
   {
     "id": 13,
-    "name": "Pani Puri",
-    "price": 40,
+    "name": "Dahi Puri",
+    "price": 35,
     "category": "snacks",
-    "image": "/hero-food.png",
-    "description": "Crisp, tangy, and fun—one of the most tempting evening cravings."
+    "image": "/menu/dahi puri.png",
+    "description": "Puris filled with yogurt, chutneys, and sev."
+  },
+  {
+    "id": 14,
+    "name": "Tea",
+    "price": 12,
+    "category": "drinks",
+    "image": "/menu/Tea.png",
+    "description": "Hot strong campus tea for quick refreshment."
+  },
+  {
+    "id": 15,
+    "name": "Coffee",
+    "price": 15,
+    "category": "drinks",
+    "image": "/menu/Coffee.png",
+    "description": "Bold South Indian filter coffee."
+  },
+  {
+    "id": 16,
+    "name": "Lemon Juice",
+    "price": 20,
+    "category": "drinks",
+    "image": "/menu/lemon juice.png",
+    "description": "Fresh lemon juice for a cool break."
+  },
+  {
+    "id": 17,
+    "name": "Orange Juice",
+    "price": 25,
+    "category": "drinks",
+    "image": "/menu/orange juice.png",
+    "description": "Refreshing freshly squeezed orange juice."
+  },
+  {
+    "id": 18,
+    "name": "Watermelon Juice",
+    "price": 25,
+    "category": "drinks",
+    "image": "/menu/Water melon juice.png",
+    "description": "Cool watermelon juice perfect for hot days."
+  },
+  {
+    "id": 19,
+    "name": "Rose Milk",
+    "price": 25,
+    "category": "drinks",
+    "image": "/menu/Rose milk.png",
+    "description": "Sweet chilled rose milk drink."
   }
 ]

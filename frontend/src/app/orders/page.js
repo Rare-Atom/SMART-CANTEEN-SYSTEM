@@ -1,5 +1,5 @@
 import Layout from "@/components/layout";
-import badge from "@/components/badge";
+import Badge from "@/components/badge";
 import orders from "@/mock/orders.json";
 
 export default function OrdersPage() {
@@ -25,7 +25,7 @@ export default function OrdersPage() {
               </div>
 
               <div className="staffbadges">
-                <badge status={order.status} />
+                <Badge status={order.status} />
                 <span className={`paymentbadge ${order.payment}`}>
                   {order.payment === "paid" ? "PAID" : "PAYMENT AWAITING"}
                 </span>

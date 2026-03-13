@@ -1,28 +1,18 @@
-"use client"
+export default function Badge({ status }) {
+  const normalized = String(status || "pending").toLowerCase();
 
-export default function badge({ status }) {
+  const labelMap = {
+    pending: "PENDING",
+    accepted: "ACCEPTED",
+    approved: "APPROVED",
+    preparing: "PREPARING",
+    ready: "READY",
+    rejected: "REJECTED",
+  };
 
-
-
-if (status === "Pending") color = "orange"
-if (status === "Preparing") color = "blue"
-if (status === "Ready") color = "green"
-if (status === "Accepted") color = "blue"
-if (status === "rejected") color = "red"
-
-return (
-
-<span
-style={{
-background: color,
-color: "white",
-padding: "5px 10px",
-borderRadius: "6px"
-}}
->
-{status}
-</span>
-
-)
-
+  return (
+    <span className={`badge ${normalized}`}>
+      {labelMap[normalized] || normalized.toUpperCase()}
+    </span>
+  );
 }

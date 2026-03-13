@@ -1,127 +1,116 @@
 "use client";
 
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const role = useMemo(() => searchParams.get("role") || "student", [searchParams]);
+  const initialRole = searchParams.get("role") || "student";
+  const [role, setRole] = useState(initialRole);
 
-  const goNext = () => {
+  const handleLogin = (e) => {
+    e.preventDefault();
+
     if (role === "staff") {
-      window.location.href = "/staff/orders";
+      router.push("/staff/orders");
     } else {
-      window.location.href = "/menu";
+      router.push("/menu");
     }
   };
 
   return (
-    <div className="authShell authShellRefined">
-      <div className="authGrid authGridRefined">
-        <div className="authCard authCardRefined">
-          <div className="authTabs authTabsRefined">
-            <a
-              href="/login?role=student"
-              className={`authTab ${role === "student" ? "active" : ""}`}
+    <div className="loginScreen">
+      <div className="loginShell">
+        <div className="loginCardPanel">
+          <div className="loginRoleTabs">
+            <button
+              className={`loginRoleTab ${role === "student" ? "active" : ""}`}
+              onClick={() => setRole("student")}
+              type="button"
             >
               Student Login
-            </a>
-
-            <a
-              href="/login?role=staff"
-              className={`authTab ${role === "staff" ? "active" : ""}`}
+            </button>
+            <button
+              className={`loginRoleTab ${role === "staff" ? "active" : ""}`}
+              onClick={() => setRole("staff")}
+              type="button"
             >
               Staff Login
-            </a>
+            </button>
           </div>
 
-          <div className="authContentBlock">
-            <div className="authKicker">
-              {role === "staff" ? "Counter operations" : "Fast campus ordering"}
-            </div>
-
-            <h1 className="authTitle">
-              {role === "staff" ? "Keep the queue moving." : "Good food starts here."}
+          <div className="loginCopy">
+            <h1>
+              Good food starts
+              <br />
+              here.
             </h1>
-
-            <p className="authSub">
-              {role === "staff"
-                ? "Open incoming orders, respond quickly, and update preparation status without confusion."
-                : "Sign in, choose your slot, and order your campus favourites with less waiting and smoother pickup."}
+            <p>
+              Sign in, choose your slot, and move through a premium campus
+              canteen experience without the queue.
             </p>
           </div>
 
-          <div className="authForm authFormRefined">
-            <div className="authField">
-              <label className="authLabel">
-                {role === "staff" ? "Staff ID / Email" : "Register No / Email"}
-              </label>
-              <input
-                className="authInput"
-                placeholder={role === "staff" ? "Enter staff ID or email" : "Enter register number or email"}
-              />
-            </div>
-
-            <div className="authField">
-              <label className="authLabel">Password</label>
-              <input
-                className="authInput"
-                type="password"
-                placeholder="Enter password"
-              />
-            </div>
-
-            <button className="authButton authButtonRefined" onClick={goNext}>
-              {role === "staff" ? "Open Staff Dashboard" : "Start Ordering"}
+          <form className="loginFormWrap" onSubmit={handleLogin}>
+            <input
+              className="loginInput"
+              type="text"
+              placeholder={
+                role === "staff" ? "Staff ID / Email" : "Register No / Email"
+              }
+            />
+            <input
+              className="loginInput"
+              type="password"
+              placeholder="Password"
+            />
+            <button className="loginMainBtn" type="submit">
+              {role === "staff" ? "Enter Staff Dashboard" : "Start Ordering"}
             </button>
-
-            <div className="authHint">
-              {role === "staff"
-                ? "Use your staff access to manage approvals, preparation, and pickup flow."
-                : "Your slot, order status, and payment window will stay visible after login."}
-            </div>
-          </div>
+          </form>
         </div>
 
-        <div className="authVisual authVisualRefined">
-          <div className="authVisualTop">
-            <div className="authVisualKicker">
-              {role === "staff" ? "Built for quick decisions" : "Fresh picks. Faster pickup."}
-            </div>
-
-            <h3>
-              {role === "staff"
-                ? "Smarter control during rush hours."
-                : "Browse, choose, and collect without the crowd."}
-            </h3>
-
+        <div className="loginVisualPanel">
+          <div className="loginVisualCopy">
+            <h2>Fresh picks. Faster pickup.</h2>
             <p>
-              {role === "staff"
-                ? "Approve orders faster, track status clearly, and keep students moving through the counter smoothly."
-                : "A cleaner canteen flow for campus life — from menu browsing to payment and pickup."}
+              Browse, choose, and order in a polished canteen flow designed for
+              busy campus life.
             </p>
           </div>
 
-          <div className="authImage authImageRefined">
-            <Image
-              src={role === "staff" ? "/login-food.png" : "/hero-food.png"}
-              alt="Canteen food visual"
-              fill
-              style={{ objectFit: "cover" }}
-              priority
-            />
-          </div>
-
-          <div className="authVisualFooter">
-            <div className="authMiniStat">
-              <span className="authMiniStatLabel">Flow</span>
-              <strong>{role === "staff" ? "Approve → Prepare → Ready" : "Pick → Pay → Collect"}</strong>
+          <div className="loginFoodShowcase">
+            <div className="loginFoodPrimary">
+              <Image
+                src="/hero-snacks-drinks.png"
+                alt="Snacks and drinks"
+                width={440}
+                height={440}
+                className="loginFoodMainImage"
+                priority
+              />
             </div>
 
-            <div className="authMiniStat">
-              <span className="authMiniStatLabel">Mode</span>
-              <strong>{role === "staff" ? "Operations View" : "Student Ordering"}</strong>
+            <div className="loginFoodMini loginFoodMiniLeft">
+              <Image
+                src="/hero-veg-thali.png"
+                alt="Veg platter"
+                width={180}
+                height={180}
+                className="loginMiniImage"
+              />
+            </div>
+
+            <div className="loginFoodMini loginFoodMiniRight">
+              <Image
+                src="/hero-nonveg-thali.png"
+                alt="Non veg platter"
+                width={180}
+                height={180}
+                className="loginMiniImage"
+              />
             </div>
           </div>
         </div>
