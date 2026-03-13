@@ -3,17 +3,27 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div className="appShell">
-      <section className="homeHero">
-        <header className="heroHeader">
-          <div className="brandWrap">
-            <div className="brandLogo">S</div>
-            <div className="brandText">
+      <section className="homeHero homeHeroRefined">
+        <header className="heroHeader heroHeaderRefined">
+          <div className="brandWrap brandWrapRefined">
+            <div className="brandLogo brandLogoImageWrap">
+              <Image
+                src="/sathyabama-logo.png"
+                alt="Sathyabama Logo"
+                width={56}
+                height={56}
+                className="brandLogoImage"
+                priority
+              />
+            </div>
+
+            <div className="brandText brandTextRefined">
               <h1>SIST Smart Canteen</h1>
               <p>Skip the queue, Savour the meal</p>
             </div>
           </div>
 
-          <nav className="heroNav">
+          <nav className="heroNav heroNavRefined">
             <a href="/menu">Menu</a>
             <a href="/orders">Orders</a>
             <a href="/staff/orders">Staff</a>
@@ -23,15 +33,30 @@ export default function Home() {
           </nav>
         </header>
 
-        <div className="heroSideImage heroLeftImage">
-          <Image src="/hero-food.png" alt="Veg canteen food" fill style={{ objectFit: "contain" }} priority />
+        <div className="heroGlow heroGlowLeft" />
+        <div className="heroGlow heroGlowRight" />
+
+        <div className="heroSideImage heroLeftImage heroFoodRefined">
+          <Image
+            src="/hero-food.png"
+            alt="Veg canteen food"
+            fill
+            style={{ objectFit: "contain" }}
+            priority
+          />
         </div>
 
-        <div className="heroSideImage heroRightImage">
-          <Image src="/login-food.png" alt="Non veg canteen food" fill style={{ objectFit: "contain" }} priority />
+        <div className="heroSideImage heroRightImage heroFoodRefined">
+          <Image
+            src="/login-food.png"
+            alt="Non veg canteen food"
+            fill
+            style={{ objectFit: "contain" }}
+            priority
+          />
         </div>
 
-        <div className="heroContent">
+        <div className="heroContent heroContentRefined">
           <h2>
             Order food smarter.
             <br />
@@ -41,13 +66,15 @@ export default function Home() {
           </h2>
 
           <p>
-            Premium slot-based ordering for Sathyabama students with staff approval,
-            live tracking, and a faster pickup experience.
+            Slot-based ordering for Sathyabama students with cleaner pickup,
+            faster approval, and a smoother meal experience every day.
           </p>
 
-          <div className="heroSearchArea">
+          <div className="heroSearchArea heroSearchAreaRefined">
             <select className="heroSelect" defaultValue="">
-              <option value="" disabled>Select canteen</option>
+              <option value="" disabled>
+                Select canteen
+              </option>
               <option value="main">Main Canteen</option>
               <option value="scas">SCAS Canteen</option>
             </select>
@@ -61,40 +88,75 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="categoryCards">
-        <a href="/menu?category=veg" className="categoryCard">
-          <div className="categoryText">
-            <div className="categoryTitle">VEG</div>
-            <div className="categorySubtitle">Meals • Dosa • Fried Rice</div>
-            <div className="categoryBadge">Pure Veg Choices</div>
+      <section className="categoryCards categoryCardsRefined">
+        <a href="/menu?category=veg" className="categoryCard categoryCardRefined">
+          <div className="categoryText categoryTextBalanced">
+            <div className="categoryTitle categoryTitleBalanced">VEG</div>
+            <div className="categorySubtitle categorySubtitleBalanced">
+              Meals • Dosa • Fried Rice
+            </div>
+            <div className="categoryBadge categoryBadgeBalanced">
+              Pure Veg Choices
+            </div>
           </div>
-          <div className="categoryImageWrap">
-            <Image src="/hero-food.png" alt="Veg category" fill style={{ objectFit: "cover" }} />
+
+          <div className="categoryImageWrap categoryImageWrapRefined">
+            <Image
+              src="/hero-food.png"
+              alt="Veg category"
+              fill
+              style={{ objectFit: "cover" }}
+            />
           </div>
+
           <div className="categoryArrow">→</div>
         </a>
 
-        <a href="/menu?category=nonveg" className="categoryCard">
-          <div className="categoryText">
-            <div className="categoryTitle">NON-VEG</div>
-            <div className="categorySubtitle">Biryani • Chicken 65 • Omelette</div>
-            <div className="categoryBadge">Hearty Meal Favourites</div>
+        <a href="/menu?category=nonveg" className="categoryCard categoryCardRefined">
+          <div className="categoryText categoryTextBalanced">
+            <div className="categoryTitle categoryTitleBalanced">NON-VEG</div>
+            <div className="categorySubtitle categorySubtitleBalanced">
+              Biryani • Chicken 65 • Omelette
+            </div>
+            <div className="categoryBadge categoryBadgeBalanced">
+              Hearty Meal Favourites
+            </div>
           </div>
-          <div className="categoryImageWrap">
-            <Image src="/login-food.png" alt="Non veg category" fill style={{ objectFit: "cover" }} />
+
+          <div className="categoryImageWrap categoryImageWrapRefined">
+            <Image
+              src="/login-food.png"
+              alt="Non veg category"
+              fill
+              style={{ objectFit: "cover" }}
+            />
           </div>
+
           <div className="categoryArrow">→</div>
         </a>
 
-        <a href="/menu?category=snacks" className="categoryCard">
-          <div className="categoryText">
-            <div className="categoryTitle">SNACKS & DRINKS</div>
-            <div className="categorySubtitle">Softies • Chats • Fresh Juices • Tea/Coffee</div>
-            <div className="categoryBadge">Quick Cravings</div>
+        <a href="/menu?category=snacks" className="categoryCard categoryCardRefined">
+          <div className="categoryText categoryTextBalanced categoryTextSnacksFixed">
+            <div className="categoryTitle categoryTitleBalanced categoryTitleSnacksFixed">
+              SNACKS & DRINKS
+            </div>
+            <div className="categorySubtitle categorySubtitleBalanced">
+              Softies • Chats • Fresh Juices • Tea/Coffee
+            </div>
+            <div className="categoryBadge categoryBadgeBalanced">
+              Quick Cravings
+            </div>
           </div>
-          <div className="categoryImageWrap">
-            <Image src="/hero-food.png" alt="Snacks category" fill style={{ objectFit: "cover" }} />
+
+          <div className="categoryImageWrap categoryImageWrapRefined">
+            <Image
+              src="/hero-food.png"
+              alt="Snacks and drinks category"
+              fill
+              style={{ objectFit: "cover" }}
+            />
           </div>
+
           <div className="categoryArrow">→</div>
         </a>
       </section>

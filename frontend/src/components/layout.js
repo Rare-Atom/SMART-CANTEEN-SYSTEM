@@ -1,26 +1,24 @@
 export default function Layout({ children }) {
   return (
     <div className="appShell">
-      <div className="topBarWhite">
+      <header className="topBarWhite">
         <div className="leftGroup">
           <div className="brandLogo">S</div>
           <div>
             <div className="brandMini">SIST Smart Canteen</div>
-            <div style={{ color: "#686b78", fontSize: 14 }}>
-              Fresh picks. Faster pickup.
-            </div>
+            <div className="brandMiniSub">Skip the queue, Savour the meal</div>
           </div>
         </div>
 
-        <div className="navMini">
+        <nav className="navMini">
           <a href="/">Home</a>
           <a href="/menu">Menu</a>
           <a href="/orders">Orders</a>
           <a href="/staff/orders">Staff</a>
-        </div>
-      </div>
+        </nav>
+      </header>
 
-      <div className="pageWrap">{children}</div>
+      <main className="pageWrap">{children}</main>
     </div>
   );
 }

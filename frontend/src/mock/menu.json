@@ -5,7 +5,7 @@
     "price": 80,
     "category": "veg",
     "image": "/hero-food.png",
-    "description": "Wok-tossed rice with vegetables, warm spices, and quick canteen comfort."
+    "description": "Wok-tossed rice with vegetables and canteen-style flavour for a filling lunch."
   },
   {
     "id": 2,
@@ -13,7 +13,7 @@
     "price": 35,
     "category": "veg",
     "image": "/hero-food.png",
-    "description": "Golden crisp dosa with masala filling, sambar, and chutney."
+    "description": "Golden crisp dosa with masala filling, served with chutney and sambar."
   },
   {
     "id": 3,
@@ -21,7 +21,7 @@
     "price": 25,
     "category": "veg",
     "image": "/hero-food.png",
-    "description": "Soft idlis served with hot sambar and a smooth chutney touch."
+    "description": "Soft idlis with hot sambar and smooth chutney for a classic breakfast pick."
   },
   {
     "id": 4,
@@ -29,7 +29,7 @@
     "price": 130,
     "category": "nonveg",
     "image": "/login-food.png",
-    "description": "Flavour-packed rice with chicken bites for a filling lunch break."
+    "description": "A flavour-packed rice bowl with chicken bites made for a hearty meal break."
   },
   {
     "id": 5,
@@ -37,7 +37,7 @@
     "price": 150,
     "category": "nonveg",
     "image": "/login-food.png",
-    "description": "Aromatic biryani layered with spice, chicken pieces, and egg."
+    "description": "Aromatic biryani layered with chicken and egg for a rich campus favourite."
   },
   {
     "id": 6,
@@ -45,7 +45,7 @@
     "price": 80,
     "category": "nonveg",
     "image": "/login-food.png",
-    "description": "Spicy, crispy, crowd-favourite chicken bites made for quick cravings."
+    "description": "Crisp, spicy chicken bites with bold flavour and quick-snack energy."
   },
   {
     "id": 7,
@@ -53,7 +53,7 @@
     "price": 15,
     "category": "nonveg",
     "image": "/login-food.png",
-    "description": "Simple, hot, and protein-packed—made for an instant hunger fix."
+    "description": "Simple, hot, and protein-rich—perfect for an instant hunger fix."
   },
   {
     "id": 8,
@@ -61,7 +61,7 @@
     "price": 30,
     "category": "snacks",
     "image": "/hero-food.png",
-    "description": "Creamy soft-serve style treat for a chilled break between classes."
+    "description": "A creamy chilled treat for a quick sweet break between classes."
   },
   {
     "id": 9,
@@ -69,7 +69,7 @@
     "price": 30,
     "category": "snacks",
     "image": "/hero-food.png",
-    "description": "Fresh, cool, and refreshing with a light citrus kick."
+    "description": "Fresh, cool, and citrusy—perfect for a hot afternoon recharge."
   },
   {
     "id": 10,
@@ -77,7 +77,7 @@
     "price": 12,
     "category": "snacks",
     "image": "/hero-food.png",
-    "description": "Classic campus tea—quick, warm, and always in demand."
+    "description": "The campus essential—hot, strong, and always in demand."
   },
   {
     "id": 11,
@@ -85,7 +85,7 @@
     "price": 15,
     "category": "snacks",
     "image": "/hero-food.png",
-    "description": "Strong and smooth, perfect for powering through the next session."
+    "description": "Bold and comforting, made for quick breaks and long days."
   },
   {
     "id": 12,
@@ -93,6 +93,14 @@
     "price": 50,
     "category": "snacks",
     "image": "/hero-food.png",
-    "description": "Sweet, cold, and nostalgic—an easy favourite for hot afternoons."
+    "description": "Cold, sweet, and refreshing with a nostalgic canteen touch."
+  },
+  {
+    "id": 13,
+    "name": "Pani Puri",
+    "price": 40,
+    "category": "snacks",
+    "image": "/hero-food.png",
+    "description": "Crisp, tangy, and fun—one of the most tempting evening cravings."
   }
 ]

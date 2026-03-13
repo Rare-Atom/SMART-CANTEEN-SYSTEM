@@ -1,66 +1,35 @@
 [
-{
-"name":"Lime Juice",
-"price":30,
-"image":"https://images.unsplash.com/photo-1558640476-437a2b9438a2?auto=format&fit=crop&w=800&q=60",
-"status":"Pending"
-},
-
-{
-"name":"Orange Juice",
-"price":70,
-"image":"https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=800&q=60",
-"status":"aceepted"
-},
-
-{
-"name":"Pineapple Juice",
-"price":60,
-"image":"https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=800&q=60",
-"status":"Ready"
-},
-{
-"name":"Chicken Fried Rice",
-"price":130,
-"image":"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=60",
-"status":"Preparing"
-},
-{
-"name":"Chicken Noodles",
-"price":130,
-"image":"https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=800&q=60",
-"status":"accepted"
-},
-
-{
-"name":"Egg Fried Rice",
-"price":90,
-"image":"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=60",
-"status":"Preparing"
-},
-{
-"name":"Veg Noodles",
-"price":80,
-"image":"https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&w=800&q=60",
-"status":"Pending"
-},
-{
-"name":"Chicken Biryani",
-"price":150,
-"image":"https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=800&q=60",
-"status":"accepted"
-},
-
-{
-"name":"Tea",
-"price":12,
-"image":"https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?auto=format&fit=crop&w=800&q=60",
-"status":"Ready"
-},
-{
-"name":"Coffee",
-"price":15,
-"image":"https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=60",
-"status":"Pending"
-}
+  {
+    "id": "124",
+    "items": "Veg Fried Rice ×1, Tea ×1",
+    "slot": "12:15 - 12:30",
+    "status": "accepted",
+    "payment": "awaiting",
+    "total": 92,
+    "token": "pay124",
+    "note": "Your order is approved. Complete payment in the active QR window to move ahead.",
+    "canteen": "Main Canteen"
+  },
+  {
+    "id": "128",
+    "items": "Chicken Biryani with Egg ×1",
+    "slot": "01:00 - 01:15",
+    "status": "preparing",
+    "payment": "paid",
+    "total": 150,
+    "token": "pay128",
+    "note": "Your meal is now being prepared. Pickup will be ready soon.",
+    "canteen": "Main Canteen"
+  },
+  {
+    "id": "131",
+    "items": "Softie ×2, Rose Milk ×1",
+    "slot": "03:15 - 03:30",
+    "status": "ready",
+    "payment": "paid",
+    "total": 110,
+    "token": "pay131",
+    "note": "Everything is ready at the counter. Collect it while it’s fresh.",
+    "canteen": "SCAS Canteen"
+  }
 ]

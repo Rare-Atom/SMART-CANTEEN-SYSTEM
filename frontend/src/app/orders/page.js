@@ -1,86 +1,77 @@
-"use client"
+import Layout from "@/components/layout";
+import badge from "@/components/badge";
+import orders from "@/mock/orders.json";
 
-import Link from "next/link"
-import { useState, useEffect } from "react"
-import orders from "@/mock/orders.json"
-import Badge from "@/components/badge.js"
+export default function OrdersPage() {
+  return (
+    <Layout>
+      <div className="ordersHero">
+        <div>
+          <div className="menuKicker">Student orders</div>
+          <h1 className="sectionHeading">Your order story</h1>
+          <p className="sectionSub">
+            From approval to pickup, every update stays clear, fast, and easy to follow.
+          </p>
+        </div>
+      </div>
 
-export default function OrdersPage(){
+      <div className="orderGrid orderGridRefined">
+        {orders.map((order) => (
+          <div className="orderCard orderCardRefined" key={order.id}>
+            <div className="orderTop">
+              <div>
+                <div className="orderId">Order #{order.id}</div>
+                <div className="orderMiniMeta">{order.canteen}</div>
+              </div>
 
-const [tokens,setTokens] = useState([])
+              <div className="staffbadges">
+                <badge status={order.status} />
+                <span className={`paymentbadge ${order.payment}`}>
+                  {order.payment === "paid" ? "PAID" : "PAYMENT AWAITING"}
+                </span>
+              </div>
+            </div>
 
-useEffect(() => {
-  const generatedTokens = orders.map(() =>
-    Math.random().toString(36).substring(2,8)
-  )
-  setTokens(generatedTokens)
-}, [])
+            <div className="orderMeta orderMetaRefined">
+              <div><strong>Items:</strong> {order.items}</div>
+              <div><strong>Pickup Slot:</strong> {order.slot}</div>
+              <div>{order.note}</div>
+            </div>
 
-return(
+            <div className="orderProgressRow">
+              <div className={`progressStep ${["accepted", "preparing", "ready"].includes(order.status) ? "done" : ""}`}>
+                Approved
+              </div>
+              <div className={`progressStep ${order.payment === "paid" ? "done" : ""}`}>
+                Payment
+              </div>
+              <div className={`progressStep ${["preparing", "ready"].includes(order.status) ? "done" : ""}`}>
+                Preparing
+              </div>
+              <div className={`progressStep ${order.status === "ready" ? "done" : ""}`}>
+                Ready
+              </div>
+            </div>
 
-<div style={{padding:"20px"}}>
+            <div className="staffMetaRow">
+              <span className="amountChip">₹{order.total}</span>
+              <span className="slotChip">{order.slot}</span>
+            </div>
 
-<h1>canteen menu</h1>
+            <div className="orderActions">
+              {order.payment === "awaiting" ? (
+                <a href={`/pay/${order.token}`} className="primarySmallBtn">
+                  Scan & Pay
+                </a>
+              ) : null}
 
-<div style={{
-display:"grid",
-gridTemplateColumns:"repeat(3,1fr)",
-gap:"20px"
-}}>
-
-{orders.map((item,index)=>{
-
-const token = tokens[index]
-
-return(
-
-<div key={index}
-style={{
-border:"1px solid #ccc",
-padding:"10px",
-borderRadius:"10px"
-}}>
-
-<img
-src={item.image}
-alt={item.name}
-style={{
-width:"100%",
-height:"200px",
-objectFit:"cover"
-}}
-/>
-
-<h3>{item.name}</h3>
-
-<p>₹{item.price}</p>
-
-<Badge status={item.status}/>
-
-<br/><br/>
-
-<Link href={`/pay/${token}`}>
-<button style={{
-background:"green",
-color:"white",
-padding:"8px 15px",
-border:"none",
-borderRadius:"5px"
-}}>
-Order Now
-</button>
-</Link>
-
-</div>
-
-)
-
-})}
-
-</div>
-
-</div>
-
-)
-
+              <a href={`/pay/${order.token}`} className="secondaryBtn">
+                View Payment
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Layout>
+  );
 }

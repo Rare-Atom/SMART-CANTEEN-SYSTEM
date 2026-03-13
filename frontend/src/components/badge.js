@@ -1,8 +1,8 @@
 "use client"
 
-export default function Badge({ status }) {
+export default function badge({ status }) {
 
-let color = "gray"
+
 
 if (status === "Pending") color = "orange"
 if (status === "Preparing") color = "blue"
