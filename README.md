@@ -47,46 +47,14 @@ This enables staff to handle rush hours efficiently.
 🧠 System Flow
 
 Student Login
-
-      │
-      ▼
-      
-Browse Menu
-
-      │
-      ▼
-      
-Select Items + Pickup Slot
-
-      │
-      ▼
-      
-Order Created
-
-      │
-      ▼
-      
-Staff Dashboard Approval
-
-      │
-      ▼
-      
-QR Payment Page
-
-      │
-      ▼
-      
-Payment Verified
-
-      │
-      ▼
-      
-Kitchen Preparation
-
-      │
-      ▼
-      
-Pickup Notification
+      ➡️Browse Menu
+      ➡️      Select Items + Pickup Slot
+      ➡️   Order Created
+      ➡️  Staff Dashboard Approval
+      ➡️  QR Payment Page
+      ➡️          Payment Verified
+      ➡️         Kitchen Preparation
+      ➡️            Pickup Notification
 
 🏗️ Tech Stack
 
