@@ -18,8 +18,6 @@ Campus cafeterias often struggle with:
 • Order confusion
 • Poor pickup coordination
 
-SIST Smart Canteen solves this with a digital ordering flow similar to Swiggy/Zomato — but optimized for campus environments.
-
 Students order → Staff approves → Payment happens → Food gets prepared → Pickup becomes smooth.
 
 ⏱️ Slot-Based Ordering
