@@ -1,22 +1,22 @@
 const router = require("express").Router();
-const auth = require("../middleware/auth.middleware");
-const role = require("../middleware/role.middleware");
+const { protect } = require("../middleware/auth.middleware");
+const staffOnly = require("../middleware/role.middleware")("staff");
 const controller = require("../controllers/staff.controller");
 
-router.get("/orders", auth, role("staff"), controller.getPendingOrders);
+// All routes here require a valid JWT with role="staff".
+// Specific string sub-routes come BEFORE parameterised /:id routes.
 
-router.patch(
-    "/orders/:id/decision",
-    auth,
-    role("staff"),
-    controller.decision
-);
+router.get("/orders",                               protect, staffOnly, controller.getAllOrders);
+router.get("/orders/pending",                       protect, staffOnly, controller.getPendingOrders);
+router.get("/orders/:id",                           protect, staffOnly, controller.getOrderById);
 
-router.patch(
-    "/orders/:id/status",
-    auth,
-    role("staff"),
-    controller.updateStatus
-);
+// Accept or reject a PENDING order
+router.post("/orders/:id/decision",                 protect, staffOnly, controller.decision);
+
+// Staff confirms student's submitted payment → moves to PREPARING
+router.post("/orders/:id/confirm-payment",          protect, staffOnly, controller.confirmPaymentByStaff);
+
+// Staff manually updates workflow status (PREPARING → READY etc.)
+router.put("/orders/:id/status",                    protect, staffOnly, controller.updateStatus);
 
 module.exports = router;

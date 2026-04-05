@@ -1,8 +1,4 @@
+/** Returns a Date exactly 5 minutes from now — used for payment session windows. */
 module.exports = function generatePaymentExpiry() {
-
-    const now = new Date();
-
-    const expiry = new Date(now.getTime() + 3 * 60 * 1000);
-
-    return expiry;
-}
+    return new Date(Date.now() + 5 * 60 * 1000);
+};

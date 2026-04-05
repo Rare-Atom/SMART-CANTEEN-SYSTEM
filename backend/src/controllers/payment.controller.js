@@ -1,80 +1,35 @@
-const crypto = require("crypto");
-
-const PaymentSession = require("../models/PaymentSession");
 const Order = require("../models/Order");
 
-const generateExpiry = require("../utils/generatePaymentExpiry");
+// GET /api/pay/verify/:token  (public — anyone with the link can check status)
+// Looks up the order directly via its paymentToken field.
+// Returns order state so the payment page can render correctly for any status.
+exports.verifyToken = async (req, res, next) => {
+    try {
+        const order = await Order.findOne({ paymentToken: req.params.token }).lean();
 
+        if (!order) {
+            return res.status(404).json({ message: "Invalid payment link" });
+        }
 
-// Create payment session
-exports.createPaymentSession = async (req, res) => {
+        // Token is only meaningful while the order is in a payment-related state
+        const activeStatuses = ["ACCEPTED", "PAYMENT_SUBMITTED", "PREPARING", "READY", "COMPLETED"];
+        if (!activeStatuses.includes(order.status)) {
+            return res.status(400).json({ message: "This payment link is no longer active" });
+        }
 
-    const orderId = req.params.orderId;
-
-    const token = crypto.randomBytes(16).toString("hex");
-
-    const expiry = generateExpiry();
-
-    const session = await PaymentSession.create({
-        orderId,
-        token,
-        expiresAt: expiry
-    });
-
-    res.json({
-        paymentUrl: `/pay/${token}`,
-        expiresAt: expiry
-    });
-};
-
-
-
-// Verify token
-exports.verifyToken = async (req, res) => {
-
-    const token = req.params.token;
-
-    const session = await PaymentSession.findOne({ token });
-
-    if (!session)
-        return res.status(404).json({ message: "Invalid token" });
-
-    if (session.expiresAt < Date.now())
-        return res.status(400).json({ message: "Token expired" });
-
-    res.json({
-        valid: true,
-        expiresAt: session.expiresAt
-    });
-};
-
-
-
-// Confirm payment
-exports.confirmPayment = async (req, res) => {
-
-    const token = req.params.token;
-
-    const session = await PaymentSession.findOne({ token });
-
-    if (!session)
-        return res.status(404).json({ message: "Invalid token" });
-
-    if (session.expiresAt < Date.now())
-        return res.status(400).json({ message: "Payment expired" });
-
-    const order = await Order.findById(session.orderId);
-
-    order.status = "PAID";
-
-    await order.save();
-
-    session.paid = true;
-
-    await session.save();
-
-    res.json({
-        message: "Payment successful",
-        orderId: order._id
-    });
+        res.json({
+            valid: true,
+            order: {
+                _id: order._id,
+                items: order.items,
+                totalAmount: order.totalAmount,
+                slot: order.slot,
+                canteen: order.canteen,
+                status: order.status,
+                student: order.student,
+            },
+        });
+    } catch (err) {
+        next(err);
+    }
 };

@@ -1,118 +1,113 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Layout from "@/components/layout";
-import menuData from "@/mock/menu.json";
-import slotsData from "@/mock/slots.json";
+import { getToken, getUser } from "@/lib/auth";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
+const CANTEEN_KEY = "selectedCanteen";
 
 export default function CheckoutPage() {
   const router = useRouter();
 
   const [cart, setCart] = useState([]);
+  const [canteen, setCanteen] = useState(null);
+  const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState("");
-  const [selectedCanteen, setSelectedCanteen] = useState("Main Canteen");
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
+  const mountedRef = useRef(true);
 
+  // Redirect staff away
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const savedCanteen =
-      localStorage.getItem("selectedCanteen") || "Main Canteen";
+    const u = getUser();
+    if (u?.role === "staff") router.replace("/staff/orders");
+  }, [router]);
 
-    const enrichedCart = savedCart
-      .map((cartItem) => {
-        const fullItem = menuData.find((item) => item.id === cartItem.id);
-        if (!fullItem) return null;
-
-        return {
-          ...fullItem,
-          qty: cartItem.qty || 1,
-        };
-      })
-      .filter(Boolean);
-
-    setCart(enrichedCart);
-    setSelectedCanteen(savedCanteen);
+  // Load cart + canteen from localStorage
+  useEffect(() => {
+    try {
+      const savedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCart(savedCart);
+    } catch { setCart([]); }
+    const savedCanteen = localStorage.getItem(CANTEEN_KEY);
+    setCanteen(savedCanteen || null);
   }, []);
 
-  const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  }, [cart]);
+  // Fetch pickup slots (single request, no polling)
+  useEffect(() => {
+    mountedRef.current = true;
+    const ctrl = new AbortController();
+    fetch(`${API_BASE}/api/slots`, { signal: ctrl.signal })
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((d) => { if (mountedRef.current) setSlots(Array.isArray(d) ? d : []); })
+      .catch(() => {});
+    return () => { mountedRef.current = false; ctrl.abort(); };
+  }, []);
 
-  const platformFee = cart.length > 0 ? 5 : 0;
-  const total = subtotal + platformFee;
+  // Total = exact item prices — no platform fee
+  const total = useMemo(() => cart.reduce((s, i) => s + i.price * i.qty, 0), [cart]);
 
-  const updateQty = (id, type) => {
-    const updatedCart = cart
-      .map((item) => {
-        if (item.id !== id) return item;
-
-        const newQty = type === "inc" ? item.qty + 1 : item.qty - 1;
-        return { ...item, qty: newQty };
-      })
+  function updateQty(id, type) {
+    const updated = cart
+      .map((item) => item._id !== id ? item : { ...item, qty: type === "inc" ? item.qty + 1 : item.qty - 1 })
       .filter((item) => item.qty > 0);
+    setCart(updated);
+    try {
+      localStorage.setItem("cart", JSON.stringify(updated));
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch { /* ignore */ }
+  }
 
-    setCart(updatedCart);
+  async function handlePlaceOrder() {
+    setError("");
 
-    const localCart = updatedCart.map((item) => ({
-      id: item.id,
-      qty: item.qty,
-    }));
+    if (cart.length === 0)  { setError("Your cart is empty."); return; }
+    if (!selectedSlot)      { setError("Please select a pickup slot."); return; }
+    if (!canteen)           { setError("Canteen not selected. Go back to the menu and choose a canteen."); return; }
 
-    localStorage.setItem("cart", JSON.stringify(localCart));
-  };
+    const token = getToken();
+    if (!token) { router.push("/login?next=/checkout"); return; }
 
-  const handlePlaceOrder = () => {
-    if (cart.length === 0) {
-      alert("Your cart is empty.");
-      return;
+    setPlacing(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          items: cart.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
+          totalAmount: total,
+          slot: selectedSlot,
+          canteen,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.message || "Failed to place order."); return; }
+
+      try {
+        localStorage.removeItem("cart");
+        window.dispatchEvent(new Event("cartUpdated"));
+      } catch { /* ignore */ }
+      router.push("/orders");
+    } catch {
+      setError("Could not reach the server. Is the backend running?");
+    } finally {
+      if (mountedRef.current) setPlacing(false);
     }
-
-    if (!selectedSlot) {
-      alert("Please select a pickup slot.");
-      return;
-    }
-
-    const newOrder = {
-      id: Date.now(),
-      items: cart.map((item) => ({
-        id: item.id,
-        name: item.name,
-        qty: item.qty,
-        price: item.price,
-      })),
-      canteen: selectedCanteen,
-      slot: selectedSlot,
-      subtotal,
-      platformFee,
-      total,
-      status: "pending",
-      paymentStatus: "awaiting",
-      createdAt: new Date().toISOString(),
-    };
-
-    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-    const updatedOrders = [newOrder, ...existingOrders];
-
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
-    localStorage.removeItem("cart");
-
-    router.push("/orders");
-  };
+  }
 
   return (
     <Layout>
       <div className="pageWrap">
         <div className="menuKicker">Checkout</div>
         <h1 className="sectionHeading">Review your order</h1>
-        <p className="sectionSub">
-          Confirm your items, choose a pickup slot, and place your order in one
-          smooth step.
-        </p>
+        <p className="sectionSub">Confirm your items, choose a pickup slot, and place your order.</p>
 
-        <div className="detailGrid" style={{ marginTop: "28px" }}>
+        <div className="detailGrid" style={{ marginTop: 28 }}>
+          {/* Left: items */}
           <div className="detailMainCard">
             <div className="detailSectionTitle">Your items</div>
-
             {cart.length === 0 ? (
               <div className="emptyState">
                 <h3>Your cart is empty</h3>
@@ -121,29 +116,12 @@ export default function CheckoutPage() {
             ) : (
               <div className="detailItemsList">
                 {cart.map((item) => (
-                  <div className="detailItemRow" key={item.id}>
-                    <div>
-                      <div className="detailItemName">{item.name}</div>
-                      <div className="detailItemNote">{item.description}</div>
-                    </div>
-
+                  <div className="detailItemRow" key={item._id}>
+                    <div className="detailItemName">{item.name}</div>
                     <div className="detailItemRight">
-                      <button
-                        className="secondaryBtn"
-                        onClick={() => updateQty(item.id, "dec")}
-                      >
-                        -
-                      </button>
-
+                      <button className="secondaryBtn" onClick={() => updateQty(item._id, "dec")}>−</button>
                       <span className="qtyTag">{item.qty}</span>
-
-                      <button
-                        className="secondaryBtn"
-                        onClick={() => updateQty(item.id, "inc")}
-                      >
-                        +
-                      </button>
-
+                      <button className="secondaryBtn" onClick={() => updateQty(item._id, "inc")}>+</button>
                       <span className="foodPrice">₹{item.price * item.qty}</span>
                     </div>
                   </div>
@@ -152,33 +130,42 @@ export default function CheckoutPage() {
             )}
           </div>
 
+          {/* Right: summary + slot + action */}
           <div className="detailSideCard">
             <div className="detailSectionTitle">Order summary</div>
 
-            <div className="detailInfoGrid">
-              <div className="detailInfoItem">
-                <span className="detailLabel">Canteen</span>
-                <strong>{selectedCanteen}</strong>
+            {/* Canteen indicator */}
+            {canteen ? (
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                marginBottom: 16,
+                background: canteen === "MAIN" ? "#fff7ed" : "#eff6ff",
+                border: `1.5px solid ${canteen === "MAIN" ? "#fdba74" : "#bfdbfe"}`,
+                borderRadius: 12, padding: "10px 14px",
+              }}>
+                <span style={{ fontWeight: 800, fontSize: 14, color: canteen === "MAIN" ? "#c2410c" : "#1e40af" }}>
+                  {canteen === "MAIN" ? "🍽️" : "☕"} {canteen} Canteen
+                </span>
+                <a href="/menu" style={{ fontSize: 12, fontWeight: 700, color: "var(--brand)", textDecoration: "underline" }}>Change</a>
               </div>
-
-              <div className="detailInfoItem">
-                <span className="detailLabel">Items</span>
-                <strong>{cart.length}</strong>
+            ) : (
+              <div style={{ marginBottom: 14, background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 12, padding: "10px 14px", fontSize: 13, fontWeight: 700, color: "#dc2626" }}>
+                No canteen selected —{" "}
+                <a href="/menu" style={{ textDecoration: "underline" }}>choose one on the menu page</a>
               </div>
-            </div>
+            )}
 
-            <div style={{ marginTop: "22px" }}>
-              <div className="detailSectionTitle" style={{ fontSize: "18px" }}>
-                Pickup slot
-              </div>
-
-              <div className="searchRow">
-                {slotsData.map((slot) => (
+            {/* Slot picker */}
+            <div style={{ marginBottom: 18 }}>
+              <div className="detailSectionTitle" style={{ fontSize: 16 }}>Pickup slot</div>
+              <div className="searchRow" style={{ marginTop: 10 }}>
+                {slots.length === 0 && (
+                  <span style={{ fontSize: 13, color: "var(--muted)" }}>Loading slots…</span>
+                )}
+                {slots.map((slot) => (
                   <button
-                    key={slot.id}
-                    className={`filterChip ${
-                      selectedSlot === slot.time ? "active" : ""
-                    }`}
+                    key={slot._id}
+                    className={`filterChip ${selectedSlot === slot.time ? "active" : ""}`}
                     onClick={() => setSelectedSlot(slot.time)}
                   >
                     {slot.time}
@@ -187,39 +174,36 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Price summary — no platform fee */}
             <div className="detailSummaryBox">
-              <div className="detailSummaryRow">
-                <span>Subtotal</span>
-                <strong>₹{subtotal}</strong>
-              </div>
-
-              <div className="detailSummaryRow">
-                <span>Platform fee</span>
-                <strong>₹{platformFee}</strong>
-              </div>
-
               <div className="detailSummaryRow total">
                 <span>Total</span>
                 <strong>₹{total}</strong>
               </div>
             </div>
 
-            <div className="detailActionStack" style={{ marginTop: "18px" }}>
-              <button className="authButton" onClick={handlePlaceOrder}>
-                Place Order
-              </button>
+            {error && (
+              <div style={{ marginTop: 14, background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 12, padding: "11px 14px", color: "#dc2626", fontWeight: 700, fontSize: 14 }}>
+                {error}
+              </div>
+            )}
 
+            <div className="detailActionStack" style={{ marginTop: 18 }}>
               <button
-                className="secondaryBtn"
-                onClick={() => router.push("/menu")}
+                className="authButton"
+                onClick={handlePlaceOrder}
+                disabled={placing}
+                style={{ opacity: placing ? 0.7 : 1, cursor: placing ? "not-allowed" : "pointer" }}
               >
+                {placing ? "Placing order…" : "Place Order"}
+              </button>
+              <button className="secondaryBtn" onClick={() => router.push("/menu")}>
                 Back to Menu
               </button>
             </div>
 
             <div className="paymentNoteBox">
-              Orders move for staff approval first. Once approved, payment opens
-              for the selected pickup slot window.
+              Orders go to staff for approval first. Once accepted you will receive a payment link.
             </div>
           </div>
         </div>
