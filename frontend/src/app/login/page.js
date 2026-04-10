@@ -106,7 +106,10 @@ function LoginContent() {
   return (
     <div className="loginScreen">
       <div className="loginShell">
+        {/* LEFT PANEL */}
         <div className="loginCardPanel">
+
+          {/* Role tabs */}
           <div className="loginRoleTabs">
             <button
               className={`loginRoleTab ${role === "student" ? "active" : ""}`}
@@ -124,29 +127,64 @@ function LoginContent() {
             </button>
           </div>
 
+          {/* Mode toggle */}
           <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
-            <button onClick={() => switchMode("login")} type="button">
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              className={mode === "login" ? "activeBtn" : ""}
+            >
               Sign in
             </button>
-            <button onClick={() => switchMode("register")} type="button">
+            <button
+              type="button"
+              onClick={() => switchMode("register")}
+              className={mode === "register" ? "activeBtn" : ""}
+            >
               Create account
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          {/* Copy */}
+          <div className="loginCopy">
+            <h1>
+              Good food starts
+              <br />
+              here.
+            </h1>
+            <p>
+              {mode === "register"
+                ? "Create your account and start ordering in seconds."
+                : "Sign in, choose your slot, and move through a premium campus canteen experience without the queue."}
+            </p>
+          </div>
+
+          {/* Form */}
+          <form className="loginFormWrap" onSubmit={handleSubmit}>
             {mode === "register" && (
-              <input value={name} onChange={(e) => setName(e.target.value)} required />
+              <input
+                className="loginInput"
+                type="text"
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             )}
 
             <input
+              className="loginInput"
               type="email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
 
             <input
+              className="loginInput"
               type="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -154,27 +192,39 @@ function LoginContent() {
 
             {mode === "register" && role === "staff" && (
               <input
+                className="loginInput"
+                type="password"
+                placeholder="Staff code"
                 value={staffCode}
                 onChange={(e) => setStaffCode(e.target.value)}
                 required
               />
             )}
 
-            {error && <div>{error}</div>}
+            {error && <div className="errorBox">{error}</div>}
 
-            <button type="submit" disabled={loading}>
+            <button className="loginMainBtn" type="submit" disabled={loading}>
               {loading ? "Please wait…" : "Continue"}
             </button>
           </form>
         </div>
 
+        {/* RIGHT PANEL */}
         <div className="loginVisualPanel">
-          <Image
-            src="/hero-snacks-drinks.png"
-            alt="Snacks"
-            width={400}
-            height={400}
-          />
+          <div className="loginVisualCopy">
+            <h2>Fresh picks. Faster pickup.</h2>
+            <p>Browse, choose, and order without the queue.</p>
+          </div>
+
+          <div className="loginFoodShowcase">
+            <Image
+              src="/hero-snacks-drinks.png"
+              alt="Food"
+              width={400}
+              height={400}
+              priority
+            />
+          </div>
         </div>
       </div>
     </div>
