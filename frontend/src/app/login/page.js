@@ -14,7 +14,7 @@ function LoginPageInner() {
   const initialRole = searchParams.get("role") || "student";
   const nextPath = searchParams.get("next") || null;
 
-  const [mode, setMode] = useState("login"); // "login" | "register"
+  const [mode, setMode] = useState("login");
   const [role, setRole] = useState(initialRole);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,7 +49,6 @@ function LoginPageInner() {
     try {
       if (mode === "register") {
         const url = `${API_BASE}/api/auth/register`;
-        console.log("API:", url);
 
         const res = await fetch(url, {
           method: "POST",
@@ -77,7 +76,6 @@ function LoginPageInner() {
 
   async function doLogin(emailVal, passwordVal) {
     const url = `${API_BASE}/api/auth/login`;
-    console.log("API:", url);
 
     const res = await fetch(url, {
       method: "POST",
@@ -106,6 +104,7 @@ function LoginPageInner() {
   return (
     <div className="loginScreen">
       <div className="loginShell">
+        {/* LEFT PANEL */}
         <div className="loginCardPanel">
           <div className="loginRoleTabs">
             <button
@@ -125,10 +124,41 @@ function LoginPageInner() {
           </div>
 
           <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
-            <button type="button" onClick={() => switchMode("login")}>
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              style={{
+                flex: 1,
+                padding: "9px 0",
+                borderRadius: 12,
+                fontWeight: 800,
+                fontSize: 14,
+                cursor: "pointer",
+                border: "1.5px solid",
+                borderColor: mode === "login" ? "var(--brand)" : "rgba(0,0,0,0.10)",
+                background: mode === "login" ? "var(--brand-soft)" : "transparent",
+                color: mode === "login" ? "var(--brand)" : "var(--muted)",
+              }}
+            >
               Sign in
             </button>
-            <button type="button" onClick={() => switchMode("register")}>
+
+            <button
+              type="button"
+              onClick={() => switchMode("register")}
+              style={{
+                flex: 1,
+                padding: "9px 0",
+                borderRadius: 12,
+                fontWeight: 800,
+                fontSize: 14,
+                cursor: "pointer",
+                border: "1.5px solid",
+                borderColor: mode === "register" ? "var(--brand)" : "rgba(0,0,0,0.10)",
+                background: mode === "register" ? "var(--brand-soft)" : "transparent",
+                color: mode === "register" ? "var(--brand)" : "var(--muted)",
+              }}
+            >
               Create account
             </button>
           </div>
@@ -139,26 +169,73 @@ function LoginPageInner() {
               <br />
               here.
             </h1>
+            <p>
+              {mode === "register"
+                ? "Create your account and start ordering in seconds."
+                : "Sign in, choose your slot, and move through a premium campus canteen experience without the queue."}
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form className="loginFormWrap" onSubmit={handleSubmit}>
             {mode === "register" && (
-              <input type="text" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+              <input className="loginInput" type="text" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
             )}
 
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="loginInput" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input className="loginInput" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
-            {error && <div>{error}</div>}
+            {error && <div style={{ color: "red" }}>{error}</div>}
 
-            <button type="submit">{loading ? "Please wait…" : "Continue"}</button>
+            <button className="loginMainBtn" type="submit">
+              {loading ? "Please wait…" : "Continue"}
+            </button>
           </form>
         </div>
 
+        {/* RIGHT PANEL */}
         <div className="loginVisualPanel">
-          <Image src="/hero-snacks-drinks.png" alt="Snacks" width={400} height={400} />
-        </div>
+  <div className="loginVisualCopy">
+    <h2>Fresh picks. Faster pickup.</h2>
+    <p>
+      Browse, choose, and order in a polished canteen flow designed for
+      busy campus life.
+    </p>
+  </div>
+
+  <div className="loginFoodShowcase">
+    <div className="loginFoodPrimary">
+      <Image
+        src="/hero-snacks-drinks.png"
+        alt="Snacks and drinks"
+        width={440}
+        height={440}
+        className="loginFoodMainImage"
+        priority
+      />
+    </div>
+
+    <div className="loginFoodMini loginFoodMiniLeft">
+      <Image
+        src="/hero-veg-thali.png"
+        alt="Veg platter"
+        width={180}
+        height={180}
+        className="loginMiniImage"
+      />
+    </div>
+
+    <div className="loginFoodMini loginFoodMiniRight">
+      <Image
+        src="/hero-nonveg-thali.png"
+        alt="Non veg platter"
+        width={180}
+        height={180}
+        className="loginMiniImage"
+      />
+    </div>
+  </div>
+</div>
       </div>
     </div>
   );
