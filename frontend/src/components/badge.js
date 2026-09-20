@@ -9,6 +9,7 @@ const BADGE_MAP = {
   ready:             { label: "Ready for Pickup",   bg: "#f0fdf4", color: "#15803d", border: "#86efac" },
   completed:         { label: "Completed",          bg: "#ecfdf5", color: "#166534", border: "#6ee7b7" },
   cancelled:         { label: "Cancelled",          bg: "#fff5f5", color: "#dc2626", border: "#fecaca" },
+  failed:            { label: "Payment Failed",     bg: "#fff5f5", color: "#dc2626", border: "#fecaca" },
   // Legacy aliases
   paid:              { label: "Paid",               bg: "#f0fdf4", color: "#15803d", border: "#86efac" },
   approved:          { label: "Approved",           bg: "#eff6ff", color: "#1e40af", border: "#bfdbfe" },

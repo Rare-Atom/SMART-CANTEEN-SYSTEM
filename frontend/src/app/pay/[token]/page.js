@@ -145,6 +145,12 @@ export default function PaymentPage() {
         description: `Order #${order?._id?.slice(-6).toUpperCase()}`,
         prefill: { name: getUser()?.name || "" },
         theme: { color: "#ff7a00" },
+        // Explicitly enable UPI alongside the other methods — without this key
+        // Razorpay still shows every method enabled on the account, but this
+        // guarantees UPI isn't accidentally left out and none of the others are
+        // dropped. Whether UPI actually appears/works is ultimately gated by the
+        // Razorpay account/test-mode configuration, not this app's code.
+        method: { upi: true, card: true, netbanking: true, wallet: true },
         handler: async (response) => {
           try {
             const res = await fetch(`${API_BASE}/api/pay/verify-payment`, {
@@ -175,6 +181,12 @@ export default function PaymentPage() {
           setPayError("Payment failed or was declined. You can try again.");
           setPaying(false);
         }
+        // The webhook is the source of truth for the FAILED state — give it a
+        // moment to arrive, then refetch so the UI reflects the backend record
+        // rather than only this client-side event.
+        setTimeout(() => {
+          if (mountedRef.current) fetchOrder(new AbortController().signal);
+        }, 3000);
       });
 
       rzp.open();
@@ -222,6 +234,7 @@ export default function PaymentPage() {
 
   const currentStatus = order?.status ?? "ACCEPTED";
   const isPaid = order?.paymentStatus === "PAID";
+  const paymentFailed = order?.paymentStatus === "FAILED";
   const info = STATUS_INFO[currentStatus] ?? STATUS_INFO.ACCEPTED;
   const isPayable = currentStatus === "ACCEPTED" && !isPaid;
   const isLoggedIn = !!getUser();
@@ -296,9 +309,32 @@ export default function PaymentPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "10px 14px", borderRadius: 12, background: sc.bg, border: `1.5px solid ${sc.border}` }}>
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color, flexShrink: 0 }} />
             <span style={{ fontWeight: 800, fontSize: 14, color: sc.text }}>
-              {isPayable ? "PAYMENT PENDING" : currentStatus.replace(/_/g, " ")}
+              {isPayable ? (paymentFailed ? "PAYMENT FAILED" : "PAYMENT PENDING") : currentStatus.replace(/_/g, " ")}
             </span>
           </div>
+
+          {/* Verified-payment details — shown whenever paymentStatus is PAID,
+              regardless of order.status (which may already be PREPARING/READY). */}
+          {isPaid && (
+            <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 18, padding: "18px 20px", marginBottom: 16 }}>
+              <div style={{ fontWeight: 900, fontSize: 16, color: "#15803d", marginBottom: 8 }}>Payment Verified ✓</div>
+              <div style={{ fontSize: 14, color: "#166534", fontWeight: 700, lineHeight: 1.8 }}>
+                <div>₹{order?.totalAmount} paid</div>
+                {order?.paymentMethod && <div>Payment method: {order.paymentMethod.toUpperCase()}</div>}
+                {order?.razorpayPaymentId && <div>Transaction ID: {order.razorpayPaymentId}</div>}
+              </div>
+            </div>
+          )}
+
+          {/* Payment failed banner — retry stays available (same Razorpay order accepts another attempt) */}
+          {paymentFailed && isPayable && (
+            <div style={{ background: "#fff5f5", border: "1.5px solid #fecaca", borderRadius: 18, padding: "16px 20px", marginBottom: 16 }}>
+              <div style={{ fontWeight: 900, fontSize: 15, color: "#dc2626" }}>Payment Failed — Try Again</div>
+              <div style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600, marginTop: 4 }}>
+                Your last payment attempt didn&apos;t go through. No amount was captured.
+              </div>
+            </div>
+          )}
 
           {/* Pay card — only when payment pending. Razorpay Checkout itself offers
               UPI (with its own QR), cards, netbanking and wallets. */}
@@ -316,9 +352,8 @@ export default function PaymentPage() {
           {!isPayable && (
             <div style={{ background: sc.bg, border: `1.5px solid ${sc.border}`, borderRadius: 18, padding: "20px 22px", marginBottom: 16 }}>
               <div style={{ fontWeight: 900, fontSize: 15, color: info.color, marginBottom: 6 }}>
-                {currentStatus === "ACCEPTED"          && isPaid && "Payment verified — starting preparation…"}
                 {currentStatus === "PAYMENT_SUBMITTED" && "Waiting for staff to confirm your payment…"}
-                {currentStatus === "PREPARING"         && "Payment verified. Kitchen is preparing your order!"}
+                {currentStatus === "PREPARING"         && "Kitchen is preparing your order!"}
                 {currentStatus === "READY"             && "Head to the counter — your order is ready!"}
                 {currentStatus === "COMPLETED"         && "Order complete. Enjoy your meal!"}
               </div>
@@ -344,7 +379,7 @@ export default function PaymentPage() {
                 disabled={paying}
                 style={{ opacity: paying ? 0.7 : 1, cursor: paying ? "not-allowed" : "pointer" }}
               >
-                {paying ? "Processing…" : `Pay ₹${order?.totalAmount}`}
+                {paying ? "Processing…" : paymentFailed ? `Try Again — Pay ₹${order?.totalAmount}` : `Pay ₹${order?.totalAmount}`}
               </button>
             )}
             <a href="/orders" className="secondaryBtn">Back to Orders</a>

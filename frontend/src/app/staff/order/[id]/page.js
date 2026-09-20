@@ -25,6 +25,7 @@ function normalise(raw) {
     status: (raw.status ?? "PENDING").toLowerCase(),
     total: raw.totalAmount ?? 0,
     paymentToken: raw.paymentToken ?? null,
+    paymentStatus: raw.paymentStatus ?? "PENDING",
   };
 }
 
@@ -189,6 +190,9 @@ export default function StaffOrderDetailPage() {
           </div>
           <div className="staffbadges">
             <Badge status={status} />
+            {status !== "pending" && status !== "cancelled" && (
+              <Badge status={order.paymentStatus.toLowerCase()} />
+            )}
           </div>
         </div>
 
@@ -257,8 +261,14 @@ export default function StaffOrderDetailPage() {
               {decisionError && <ErrorText>{decisionError}</ErrorText>}
             </>)}
 
-            {/* Step 2: ACCEPTED → waiting for student to pay */}
-            {status === "accepted" && (
+            {/* Step 2: ACCEPTED → waiting for student to pay (Razorpay is the
+                source of truth — this reflects paymentStatus, not a claim) */}
+            {status === "accepted" && order.paymentStatus === "FAILED" && (
+              <InfoChip bg="#fff5f5" border="#fecaca" color="#dc2626">
+                ✕ Last payment attempt failed — student can retry
+              </InfoChip>
+            )}
+            {status === "accepted" && order.paymentStatus !== "FAILED" && (
               <InfoChip bg="#eff6ff" border="#bfdbfe" color="#1e40af">
                 ⏳ Waiting for student to complete payment…
               </InfoChip>

@@ -56,6 +56,11 @@ const orderSchema = new mongoose.Schema({
     razorpayPaymentId: {
         type: String
     },
+    // e.g. "upi", "card", "netbanking", "wallet" — populated from the webhook
+    // payload (Razorpay's payment.entity.method), the authoritative source.
+    paymentMethod: {
+        type: String
+    },
     paymentStatus: {
         type: String,
         enum: ["PENDING", "PAID", "FAILED"],

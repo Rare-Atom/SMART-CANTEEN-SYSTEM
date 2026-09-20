@@ -100,9 +100,13 @@ exports.decision = async (req, res, next) => {
 };
 
 // POST /api/staff/orders/:id/confirm-payment
-// Staff verifies the student's payment (order must be PAYMENT_SUBMITTED).
-// Security: only role="staff" can call this (enforced in route middleware).
-// Moves order: PAYMENT_SUBMITTED → PREPARING
+// Legacy manual-confirmation path (order must be PAYMENT_SUBMITTED — a status no
+// order reaches through the current Razorpay flow, which verifies payment and
+// moves ACCEPTED → PREPARING automatically). Kept only for old in-flight orders.
+// Security: only role="staff" can call this (enforced in route middleware), AND
+// this never trusts the student's self-report alone — it still requires Razorpay
+// to have independently verified the payment (paymentStatus === "PAID") via
+// verify-payment/webhook. Staff cannot fake a Razorpay confirmation this way.
 exports.confirmPaymentByStaff = async (req, res, next) => {
     try {
         if (req.user.role !== "staff") {
@@ -115,6 +119,11 @@ exports.confirmPaymentByStaff = async (req, res, next) => {
         if (order.status !== "PAYMENT_SUBMITTED") {
             return res.status(400).json({
                 message: `Cannot confirm payment — order status is ${order.status}. Student must submit payment first.`,
+            });
+        }
+        if (order.paymentStatus !== "PAID") {
+            return res.status(400).json({
+                message: "Razorpay has not verified this payment yet. It cannot be confirmed manually.",
             });
         }
 

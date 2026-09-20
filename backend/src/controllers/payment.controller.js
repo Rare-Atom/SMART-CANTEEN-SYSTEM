@@ -28,6 +28,8 @@ exports.verifyToken = async (req, res, next) => {
                 canteen: order.canteen,
                 status: order.status,
                 paymentStatus: order.paymentStatus,
+                paymentMethod: order.paymentMethod || null,
+                razorpayPaymentId: order.razorpayPaymentId || null,
                 student: order.student,
             },
             // Public info only — never the key secret. Frontend needs these to
@@ -90,8 +92,24 @@ exports.webhook = async (req, res, next) => {
         }
 
         const event = req.body;
+
+        if (event.event === "payment.failed") {
+            const payment = event.payload?.payment?.entity;
+            if (!payment) return res.status(200).json({ ok: true });
+
+            const order = await Order.findOne({ razorpayOrderId: payment.order_id });
+            // Idempotent, and never downgrade an already-verified payment.
+            if (!order || order.paymentStatus === "PAID" || order.paymentStatus === "FAILED") {
+                return res.status(200).json({ ok: true });
+            }
+
+            order.paymentStatus = "FAILED";
+            await order.save();
+            return res.status(200).json({ ok: true });
+        }
+
         if (event.event !== "payment.captured") {
-            // Acknowledge other events (failed, expired, etc.) without processing them.
+            // Acknowledge other events (order.paid, expired, etc.) without processing them.
             return res.status(200).json({ ok: true });
         }
 
@@ -114,6 +132,7 @@ exports.webhook = async (req, res, next) => {
 
         order.paymentStatus = "PAID";
         order.razorpayPaymentId = payment.id;
+        order.paymentMethod = payment.method || null;
         if (order.status === "ACCEPTED" || order.status === "PAYMENT_SUBMITTED") {
             order.status = "PREPARING";
         }

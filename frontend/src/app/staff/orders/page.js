@@ -18,6 +18,7 @@ function normalise(o) {
     status:    (o.status ?? "PENDING").toLowerCase(),
     total:     o.totalAmount ?? 0,
     createdAt: o.createdAt ?? null,
+    paymentStatus: (o.paymentStatus ?? "PENDING").toLowerCase(),
   };
 }
 
@@ -315,6 +316,9 @@ export default function StaffOrdersPage() {
                   </div>
                   <div className="staffbadges">
                     <Badge status={order.status} />
+                    {order.status !== "pending" && order.status !== "cancelled" && (
+                      <Badge status={order.paymentStatus} />
+                    )}
                     <span style={{
                       padding: "3px 8px", borderRadius: 8, fontSize: 11, fontWeight: 800,
                       background: order.canteen === "MAIN" ? "#fff7ed" : "#eff6ff",
