@@ -41,13 +41,17 @@ const menuItems = [
     { name: "Rose Milk",          price: 25,  category: "drinks", canteen: "BOTH", image: "/menu/Rose milk.png",           description: "Sweet chilled rose milk drink.",                                availableAt: { MAIN: true, SCAS: true } },
 ];
 
+// The 8 required pickup slots (distinct from the IST ordering windows — see
+// backend/src/utils/orderingWindow.js). Order here is preserved via `order`.
 const slots = [
-    { time: "12:15 PM", active: true },
-    { time: "12:30 PM", active: true },
-    { time: "12:45 PM", active: true },
-    { time: "01:00 PM", active: true },
-    { time: "01:15 PM", active: true },
-    { time: "01:30 PM", active: true },
+    { time: "08:15 AM", active: true, order: 0 },
+    { time: "08:30 AM", active: true, order: 1 },
+    { time: "08:45 AM", active: true, order: 2 },
+    { time: "11:00 AM", active: true, order: 3 },
+    { time: "11:15 AM", active: true, order: 4 },
+    { time: "11:30 AM", active: true, order: 5 },
+    { time: "11:45 AM", active: true, order: 6 },
+    { time: "12:00 PM", active: true, order: 7 },
 ];
 
 async function seedDatabase() {
@@ -60,10 +64,24 @@ async function seedDatabase() {
         }
 
         // ── Slots ───────────────────────────────────────────────────────────────
-        const slotCount = await Slot.countDocuments();
-        if (slotCount === 0) {
-            await Slot.insertMany(slots);
-            console.log(`Seeded ${slots.length} slots.`);
+        // Safe migration (not a one-time seed): upserts the 8 required pickup
+        // slots and deactivates any slot not in that list. Orders store the slot
+        // as a plain time string (see Order.js), not a Slot reference, so this
+        // never touches Order/User data — only the Slot collection.
+        for (const slot of slots) {
+            await Slot.updateOne(
+                { time: slot.time },
+                { $set: { active: true, order: slot.order } },
+                { upsert: true }
+            );
+        }
+        const requiredTimes = slots.map((s) => s.time);
+        const deactivated = await Slot.updateMany(
+            { time: { $nin: requiredTimes }, active: true },
+            { $set: { active: false } }
+        );
+        if (deactivated.modifiedCount > 0) {
+            console.log(`Deactivated ${deactivated.modifiedCount} legacy slot(s) no longer in use.`);
         }
 
         // ── Default staff account ────────────────────────────────────────────────

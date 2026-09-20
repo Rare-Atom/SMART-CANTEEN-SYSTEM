@@ -121,7 +121,9 @@ export default function StaffOrdersPage() {
   useEffect(() => { fetchOrderingStatus(); }, [fetchOrderingStatus]);
 
   async function toggleOrdering() {
-    const nextMode = ordering?.open ? "CLOSED" : "AUTO";
+    // Bidirectional manual override: force CLOSED, or force OPEN (bypasses
+    // the IST windows) — matches the AUTO/OPEN/CLOSED override architecture.
+    const nextMode = ordering?.open ? "CLOSED" : "OPEN";
     setOrderingBusy(true);
     try {
       const res = await fetch(`${API_BASE}/api/staff/settings/ordering`, {
