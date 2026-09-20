@@ -16,7 +16,12 @@ app.use(
 );
 
 // Body parsers
-app.use(express.json());
+// `verify` captures the raw request body so the Razorpay webhook handler can
+// compute an HMAC over the exact bytes Razorpay signed (JSON.stringify would
+// not reliably reproduce the same byte sequence).
+app.use(express.json({
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Health check
@@ -31,6 +36,7 @@ app.use("/api/slots", require("./routes/slot.routes"));
 app.use("/api/orders", require("./routes/order.routes"));
 app.use("/api/staff", require("./routes/staff.routes"));
 app.use("/api/pay", require("./routes/payment.routes"));
+app.use("/api/settings", require("./routes/settings.routes"));
 
 // Error handler
 app.use(errorMiddleware);

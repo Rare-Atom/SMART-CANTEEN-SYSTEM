@@ -48,6 +48,19 @@ const orderSchema = new mongoose.Schema({
     paymentToken: {
         type: String
     },
+    // Razorpay order created when staff accepts (amount/currency locked at creation time)
+    razorpayOrderId: {
+        type: String
+    },
+    // Set once a successful payment is verified (server-side or via webhook)
+    razorpayPaymentId: {
+        type: String
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["PENDING", "PAID", "FAILED"],
+        default: "PENDING"
+    },
     // Which canteen this order was placed at
     canteen: {
         type: String,

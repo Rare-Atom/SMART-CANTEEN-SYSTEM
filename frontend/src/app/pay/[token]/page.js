@@ -7,11 +7,12 @@ import Badge from "@/components/badge";
 import { getToken, getUser } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
+const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
 const STATUS_INFO = {
   ACCEPTED: {
-    heading: "Scan & Pay",
-    sub: "Scan the QR code with any UPI app, then click \"I've Paid\" to notify the kitchen.",
+    heading: "Complete Payment",
+    sub: "Pay securely via Razorpay — UPI, cards, netbanking and wallets are supported.",
     color: "#d97706",
   },
   PAYMENT_SUBMITTED: {
@@ -40,11 +41,11 @@ export default function PaymentPage() {
   const { token } = useParams();
 
   const [order, setOrder] = useState(null);
+  const [razorpayInfo, setRazorpayInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState(null);
 
   const mountedRef = useRef(true);
 
@@ -59,6 +60,7 @@ export default function PaymentPage() {
       const data = await res.json();
       if (mountedRef.current) {
         setOrder(data.order);
+        setRazorpayInfo(data.razorpay || null);
         setFetchError(null);
       }
       return data.order;
@@ -87,8 +89,10 @@ export default function PaymentPage() {
   // closure so the cleanup always cancels the exact interval it started.
   useEffect(() => {
     if (!order) return;
-    // Stop polling once terminal or no longer in a waiting state
-    const pollStates = ["PAYMENT_SUBMITTED", "PREPARING"];
+    // Stop polling once terminal or no longer in a waiting state.
+    // ACCEPTED is included so a payment confirmed via webhook (another device,
+    // or this tab closed and reopened) is picked up without the user acting.
+    const pollStates = ["ACCEPTED", "PAYMENT_SUBMITTED", "PREPARING"];
     if (!pollStates.includes(order.status)) return;
 
     const iv = setInterval(async () => {
@@ -102,32 +106,81 @@ export default function PaymentPage() {
     return () => clearInterval(iv);
   }, [order?.status, fetchOrder]);
 
-  // ── Student submits payment notification ──────────────────────────────────
-  async function handleSubmitPayment() {
-    const authToken = getToken();
-    if (!authToken) {
-      setSubmitError("You must be signed in to submit payment.");
+  // Loads the Razorpay Checkout script once (CDN — no npm dependency needed).
+  function loadRazorpayScript() {
+    return new Promise((resolve, reject) => {
+      if (window.Razorpay) return resolve();
+      const existing = document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`);
+      if (existing) {
+        existing.addEventListener("load", () => resolve());
+        existing.addEventListener("error", () => reject(new Error("Failed to load payment SDK")));
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = RAZORPAY_SCRIPT_SRC;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load payment SDK"));
+      document.body.appendChild(script);
+    });
+  }
+
+  // ── Student pays via Razorpay Checkout ─────────────────────────────────────
+  async function handlePay() {
+    if (!razorpayInfo?.orderId || !razorpayInfo?.keyId) {
+      setPayError("Payment session not ready yet. Please refresh.");
       return;
     }
 
-    setSubmitting(true);
-    setSubmitError(null);
+    setPaying(true);
+    setPayError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/orders/${order._id}/submit-payment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
+      await loadRazorpayScript();
+
+      const rzp = new window.Razorpay({
+        key: razorpayInfo.keyId,
+        order_id: razorpayInfo.orderId,
+        amount: Math.round((order?.totalAmount ?? 0) * 100),
+        currency: "INR",
+        name: "SIST Smart Canteen",
+        description: `Order #${order?._id?.slice(-6).toUpperCase()}`,
+        prefill: { name: getUser()?.name || "" },
+        theme: { color: "#ff7a00" },
+        handler: async (response) => {
+          try {
+            const res = await fetch(`${API_BASE}/api/pay/verify-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Payment verification failed");
+            if (mountedRef.current) setOrder(data.order);
+          } catch (err) {
+            if (mountedRef.current) setPayError(err.message || "Payment verification failed. It will be confirmed automatically shortly.");
+          } finally {
+            if (mountedRef.current) setPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: () => { if (mountedRef.current) setPaying(false); },
         },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Submission failed");
-      setSubmitted(true);
-      setOrder((prev) => ({ ...prev, status: "PAYMENT_SUBMITTED" }));
+
+      rzp.on("payment.failed", () => {
+        if (mountedRef.current) {
+          setPayError("Payment failed or was declined. You can try again.");
+          setPaying(false);
+        }
+      });
+
+      rzp.open();
     } catch (err) {
-      setSubmitError(err.message || "Could not reach server.");
-    } finally {
-      if (mountedRef.current) setSubmitting(false);
+      setPayError(err.message || "Could not start payment.");
+      setPaying(false);
     }
   }
 
@@ -168,8 +221,9 @@ export default function PaymentPage() {
   );
 
   const currentStatus = order?.status ?? "ACCEPTED";
+  const isPaid = order?.paymentStatus === "PAID";
   const info = STATUS_INFO[currentStatus] ?? STATUS_INFO.ACCEPTED;
-  const isSubmittable = currentStatus === "ACCEPTED" && !submitted;
+  const isPayable = currentStatus === "ACCEPTED" && !isPaid;
   const isLoggedIn = !!getUser();
 
   const itemsSummary = Array.isArray(order?.items)
@@ -225,9 +279,9 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          {!isLoggedIn && isSubmittable && (
+          {!isLoggedIn && isPayable && (
             <div style={{ marginTop: 14, background: "#fefce8", border: "1px solid #fde68a", borderRadius: 12, padding: "12px 14px", fontSize: 14, fontWeight: 700, color: "#92400e" }}>
-              <a href={`/login?next=/pay/${token}`} style={{ color: "var(--brand)", textDecoration: "underline" }}>Sign in</a> to submit payment.
+              <a href={`/login?next=/pay/${token}`} style={{ color: "var(--brand)", textDecoration: "underline" }}>Sign in</a> to pay.
             </div>
           )}
         </div>
@@ -235,43 +289,40 @@ export default function PaymentPage() {
         {/* ── Right: QR + action ── */}
         <div className="detailSideCard">
           <div className="detailSectionTitle">
-            {currentStatus === "ACCEPTED" ? "Scan & Pay" : "Order Status"}
+            {isPayable ? "Complete Payment" : "Order Status"}
           </div>
 
           {/* Status indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "10px 14px", borderRadius: 12, background: sc.bg, border: `1.5px solid ${sc.border}` }}>
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color, flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, fontSize: 14, color: sc.text }}>{currentStatus.replace(/_/g, " ")}</span>
+            <span style={{ fontWeight: 800, fontSize: 14, color: sc.text }}>
+              {isPayable ? "PAYMENT PENDING" : currentStatus.replace(/_/g, " ")}
+            </span>
           </div>
 
-          {/* QR code — only when payment pending */}
-          {currentStatus === "ACCEPTED" && (
-            <>
-              <div className="qrBox qrBoxRefined">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=canteen@sist&pn=SISTCanteen&am=${order?.totalAmount}&tn=Order-${order?._id?.slice(-6)}`}
-                  alt="UPI QR Code"
-                  className="qrImage qrImageRefined"
-                  loading="lazy"
-                />
+          {/* Pay card — only when payment pending. Razorpay Checkout itself offers
+              UPI (with its own QR), cards, netbanking and wallets. */}
+          {isPayable && (
+            <div className="upiHintBox">
+              <div className="upiHintTitle">Amount to pay</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: "var(--text)", margin: "4px 0 8px" }}>
+                ₹{order?.totalAmount}
               </div>
-              <div className="upiHintBox">
-                <div className="upiHintTitle">Pay via</div>
-                <div className="upiHintList">Google Pay · PhonePe · Paytm · BHIM UPI</div>
-              </div>
-            </>
+              <div className="upiHintList">UPI · Cards · Netbanking · Wallets — via Razorpay</div>
+            </div>
           )}
 
           {/* Status card for post-payment states */}
-          {currentStatus !== "ACCEPTED" && (
+          {!isPayable && (
             <div style={{ background: sc.bg, border: `1.5px solid ${sc.border}`, borderRadius: 18, padding: "20px 22px", marginBottom: 16 }}>
               <div style={{ fontWeight: 900, fontSize: 15, color: info.color, marginBottom: 6 }}>
+                {currentStatus === "ACCEPTED"          && isPaid && "Payment verified — starting preparation…"}
                 {currentStatus === "PAYMENT_SUBMITTED" && "Waiting for staff to confirm your payment…"}
-                {currentStatus === "PREPARING"         && "Kitchen is preparing your order!"}
+                {currentStatus === "PREPARING"         && "Payment verified. Kitchen is preparing your order!"}
                 {currentStatus === "READY"             && "Head to the counter — your order is ready!"}
                 {currentStatus === "COMPLETED"         && "Order complete. Enjoy your meal!"}
               </div>
-              {["PAYMENT_SUBMITTED", "PREPARING"].includes(currentStatus) && (
+              {["ACCEPTED", "PAYMENT_SUBMITTED", "PREPARING"].includes(currentStatus) && (
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
                   This page updates automatically every 15 seconds.
                 </div>
@@ -279,30 +330,29 @@ export default function PaymentPage() {
             </div>
           )}
 
-          {submitError && (
+          {payError && (
             <div style={{ marginTop: 14, background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 12, padding: "11px 14px", color: "#dc2626", fontWeight: 700, fontSize: 14 }}>
-              {submitError}
+              {payError}
             </div>
           )}
 
           <div className="detailActionStack" style={{ marginTop: 18 }}>
-            {isSubmittable && isLoggedIn && (
+            {isPayable && isLoggedIn && (
               <button
                 className="authButton"
-                onClick={handleSubmitPayment}
-                disabled={submitting}
-                style={{ opacity: submitting ? 0.7 : 1, cursor: submitting ? "not-allowed" : "pointer" }}
+                onClick={handlePay}
+                disabled={paying}
+                style={{ opacity: paying ? 0.7 : 1, cursor: paying ? "not-allowed" : "pointer" }}
               >
-                {submitting ? "Submitting…" : "I've Paid — Notify Kitchen"}
+                {paying ? "Processing…" : `Pay ₹${order?.totalAmount}`}
               </button>
             )}
             <a href="/orders" className="secondaryBtn">Back to Orders</a>
           </div>
 
-          {isSubmittable && (
+          {isPayable && (
             <div className="paymentNoteBox">
-              After paying via UPI, click <strong>I&apos;ve Paid</strong> to notify staff.
-              Staff will verify and begin preparing your order.
+              Payment is verified automatically once completed — no need to notify staff manually.
             </div>
           )}
         </div>

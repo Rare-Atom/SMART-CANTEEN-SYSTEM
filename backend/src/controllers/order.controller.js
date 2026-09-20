@@ -1,8 +1,23 @@
 const Order = require("../models/Order");
+const Settings = require("../models/Settings");
+const { isWithinOrderingWindow } = require("../utils/orderingWindow");
 
 // POST /api/orders — student places a new order
 exports.createOrder = async (req, res, next) => {
     try {
+        // Server-side ordering availability gate — never trust the frontend/browser clock.
+        const settings = await Settings.getSingleton();
+        if (settings.overrideMode === "CLOSED") {
+            return res.status(403).json({
+                message: "Ordering is temporarily unavailable. Please check with the canteen staff.",
+            });
+        }
+        if (settings.overrideMode === "AUTO" && !isWithinOrderingWindow()) {
+            return res.status(403).json({
+                message: "Ordering is currently unavailable. Please try again during the next ordering window.",
+            });
+        }
+
         const { items, totalAmount, slot, canteen } = req.body;
 
         if (!items || items.length === 0) {

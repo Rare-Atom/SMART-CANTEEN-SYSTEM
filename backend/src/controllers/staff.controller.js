@@ -2,6 +2,7 @@ const Order = require("../models/Order");
 const PaymentSession = require("../models/PaymentSession");
 const crypto = require("crypto");
 const generatePaymentExpiry = require("../utils/generatePaymentExpiry");
+const { createRazorpayOrder } = require("../services/razorpay.service");
 
 // GET /api/staff/orders — all orders, newest first
 exports.getAllOrders = async (req, res, next) => {
@@ -65,8 +66,21 @@ exports.decision = async (req, res, next) => {
         if (decision === "ACCEPT") {
             const token = crypto.randomBytes(16).toString("hex");
 
+            let razorpayOrder;
+            try {
+                razorpayOrder = await createRazorpayOrder({
+                    amountRupees: order.totalAmount,
+                    internalOrderId: order._id,
+                });
+            } catch (payErr) {
+                return res.status(payErr.status || 502).json({
+                    message: payErr.message || "Could not create payment session. Try again.",
+                });
+            }
+
             order.status = "ACCEPTED";
             order.paymentToken = token;
+            order.razorpayOrderId = razorpayOrder.id;
             await order.save();
 
             // Keep PaymentSession for backward compatibility / token lookup

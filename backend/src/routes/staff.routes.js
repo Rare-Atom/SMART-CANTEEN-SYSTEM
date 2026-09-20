@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { protect } = require("../middleware/auth.middleware");
 const staffOnly = require("../middleware/role.middleware")("staff");
 const controller = require("../controllers/staff.controller");
+const settingsController = require("../controllers/settings.controller");
 
 // All routes here require a valid JWT with role="staff".
 // Specific string sub-routes come BEFORE parameterised /:id routes.
@@ -18,5 +19,9 @@ router.post("/orders/:id/confirm-payment",          protect, staffOnly, controll
 
 // Staff manually updates workflow status (PREPARING → READY etc.)
 router.put("/orders/:id/status",                    protect, staffOnly, controller.updateStatus);
+
+// Ordering availability control (IST windows + manual override)
+router.get("/settings/ordering",                    protect, staffOnly, settingsController.getOrderingStatus);
+router.put("/settings/ordering",                    protect, staffOnly, settingsController.setOrderingStatus);
 
 module.exports = router;

@@ -39,6 +39,9 @@ export default function StaffOrdersPage() {
   const [lastRefreshed,setLastRefreshed]= useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
 
+  const [ordering, setOrdering] = useState(null); // { open, overrideMode }
+  const [orderingBusy, setOrderingBusy] = useState(false);
+
   const mountedRef     = useRef(true);
   const intervalCtrl   = useRef(null); // AbortController for the current interval tick
 
@@ -101,6 +104,37 @@ export default function StaffOrdersPage() {
     fetchOrders(intervalCtrl.current.signal);
   }
 
+  // ── Ordering availability toggle ────────────────────────────────────────────
+  const fetchOrderingStatus = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/staff/settings/ordering`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (mountedRef.current) setOrdering(data);
+    } catch { /* silent — non-critical status widget */ }
+  }, []);
+
+  useEffect(() => { fetchOrderingStatus(); }, [fetchOrderingStatus]);
+
+  async function toggleOrdering() {
+    const nextMode = ordering?.open ? "CLOSED" : "AUTO";
+    setOrderingBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/staff/settings/ordering`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ overrideMode: nextMode }),
+      });
+      if (res.ok) await fetchOrderingStatus();
+    } finally {
+      if (mountedRef.current) setOrderingBusy(false);
+    }
+  }
+
   // ── Counts for stat cards ─────────────────────────────────────────────────
   const counts = useMemo(() => ({
     total:             orders.length,
@@ -125,7 +159,27 @@ export default function StaffOrdersPage() {
             <h1 className="sectionHeading">Counter Control</h1>
             <p className="sectionSub">Manage incoming orders, confirm payments, and track kitchen progress.</p>
           </div>
-          <button onClick={refresh} style={refreshBtnStyle}>↻ Refresh</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {ordering && (
+              <button
+                onClick={toggleOrdering}
+                disabled={orderingBusy}
+                style={{
+                  ...refreshBtnStyle,
+                  cursor: orderingBusy ? "not-allowed" : "pointer",
+                  opacity: orderingBusy ? 0.7 : 1,
+                  borderColor: ordering.open ? "#86efac" : "#fecaca",
+                  background: ordering.open ? "#f0fdf4" : "#fff5f5",
+                  color: ordering.open ? "#15803d" : "#dc2626",
+                }}
+                title={ordering.overrideMode === "AUTO" ? "Following IST ordering windows" : "Manual override active"}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: ordering.open ? "#16a34a" : "#dc2626", display: "inline-block", marginRight: 6 }} />
+                Ordering: {ordering.open ? "OPEN" : "CLOSED"}
+              </button>
+            )}
+            <button onClick={refresh} style={refreshBtnStyle}>↻ Refresh</button>
+          </div>
         </div>
         {lastRefreshed && !loading && (
           <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6, fontWeight: 600 }}>
